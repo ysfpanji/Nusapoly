@@ -10,7 +10,7 @@
     <style>
         :root {
             --wood-bg: radial-gradient(circle at 50% 30%, #1a2a6c, #b21f1f, #fdbb2d);
-            --glass-bg: rgba(15, 23, 42, 0.85);
+            --glass-bg: rgba(15, 23, 42, 0.88);
             --glass-border: rgba(255, 255, 255, 0.2);
             --gold: #f6c84c;
         }
@@ -23,50 +23,59 @@
 
         .hud-panel {
             position: absolute; z-index: 10; background: var(--glass-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-            border: 1px solid var(--glass-border); border-radius: 16px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); padding: 14px;
-            display: flex; flex-direction: column; gap: 10px; pointer-events: auto;
+            border: 1px solid var(--glass-border); border-radius: 16px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); padding: 12px;
+            display: flex; flex-direction: column; gap: 8px; pointer-events: auto;
         }
 
-        #hud-kiri { top: 20px; left: 20px; width: 280px; max-height: calc(100vh - 40px); }
-        #hud-kanan { top: 20px; right: 20px; width: 280px; }
-        #hud-bawah { bottom: 20px; left: 50%; transform: translateX(-50%); width: auto; flex-direction: row; align-items: center; justify-content: center; gap: 15px; }
+        #hud-kiri { top: 15px; left: 15px; width: 260px; max-height: calc(100vh - 30px); }
+        #hud-kanan { top: 15px; right: 15px; width: 260px; }
+        #hud-bawah { bottom: 15px; left: 50%; transform: translateX(-50%); width: auto; flex-direction: row; align-items: center; justify-content: center; gap: 12px; }
 
-        .header-ui { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--gold); padding-bottom: 8px; }
-        .header-ui h2 { margin: 0; font-size: 13px; font-weight: 900; color: var(--gold); text-transform: uppercase; letter-spacing: 1px; }
+        .header-ui { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--gold); padding-bottom: 6px; }
+        .header-ui h2 { margin: 0; font-size: 12px; font-weight: 900; color: var(--gold); text-transform: uppercase; letter-spacing: 1px; }
 
-        .btn-aksi-header { padding: 6px 10px; font-size: 12px; font-weight: bold; border-radius: 8px; border: none; cursor: pointer; color: white; background: #3b82f6; box-shadow: 0 4px 0 #1d4ed8; transition: all 0.1s; }
-        .btn-aksi-header:active { transform: translateY(4px); box-shadow: 0 0 0 transparent; }
-        select { padding: 6px; font-size: 12px; border-radius: 8px; border: 1px solid var(--glass-border); background: #1e293b; color: #fff; font-weight: bold; }
+        .btn-aksi-header { padding: 4px 8px; font-size: 11px; font-weight: bold; border-radius: 6px; border: none; cursor: pointer; color: white; background: #3b82f6; box-shadow: 0 3px 0 #1d4ed8; }
+        .btn-aksi-header:active { transform: translateY(3px); box-shadow: 0 0 0 transparent; }
+        select { padding: 4px; font-size: 11px; border-radius: 6px; border: 1px solid var(--glass-border); background: #1e293b; color: #fff; font-weight: bold; }
 
-        .statistik-container { overflow-y: auto; display: flex; flex-direction: column; gap: 6px; flex-grow: 1; padding-right: 2px; }
-        .item-statistik { display: flex; justify-content: space-between; align-items: center; font-size: 12px; padding: 10px; border-radius: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); font-weight: 600; }
-        .item-statistik.aktif { background: rgba(246, 200, 76, 0.2); border-color: var(--gold); box-shadow: inset 4px 0 0 var(--gold); }
+        .statistik-container { overflow-y: auto; display: flex; flex-direction: column; gap: 4px; flex-grow: 1; max-height: 140px; }
+        .item-statistik { display: flex; justify-content: space-between; align-items: center; font-size: 11px; padding: 6px 8px; border-radius: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); font-weight: 600; }
+        .item-statistik.aktif { background: rgba(246, 200, 76, 0.2); border-color: var(--gold); box-shadow: inset 3px 0 0 var(--gold); }
         .item-statistik.bangkrut { opacity: 0.4; text-decoration: line-through; }
 
-        .hud-btn { padding: 10px 16px; font-size: 13px; font-weight: 900; border-radius: 10px; border: none; cursor: pointer; color: white; box-shadow: 0 5px 0 rgba(0,0,0,0.4); transition: all 0.1s; text-transform: uppercase; }
+        .hud-btn { padding: 8px 14px; font-size: 12px; font-weight: 900; border-radius: 8px; border: none; cursor: pointer; color: white; box-shadow: 0 4px 0 rgba(0,0,0,0.4); transition: all 0.1s; text-transform: uppercase; }
         .hud-btn:hover:not(:disabled) { filter: brightness(1.2); }
-        .hud-btn:active:not(:disabled) { transform: translateY(5px); box-shadow: 0 0 0 transparent; }
-        .hud-btn:disabled { background: #475569 !important; cursor: not-allowed; box-shadow: 0 5px 0 #1e293b; opacity: 0.5; }
+        .hud-btn:active:not(:disabled) { transform: translateY(4px); box-shadow: 0 0 0 transparent; }
+        .hud-btn:disabled { background: #475569 !important; cursor: not-allowed; box-shadow: 0 4px 0 #1e293b; opacity: 0.5; }
 
-        #log-game { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); padding: 10px; height: 180px; overflow-y: auto; font-size: 11px; border-radius: 10px; display: flex; flex-direction: column; gap: 6px; }
-        .log-item { padding-bottom: 4px; border-bottom: 1px dashed rgba(255,255,255,0.1); }
+        #log-game { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); padding: 8px; height: 120px; overflow-y: auto; font-size: 10px; border-radius: 8px; display: flex; flex-direction: column; gap: 4px; }
+        .log-item { padding-bottom: 2px; border-bottom: 1px dashed rgba(255,255,255,0.1); }
 
-        .area-dadu-container { display: flex; align-items: center; gap: 12px; background: rgba(0,0,0,0.3); padding: 8px 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); }
-        .box-dadu-single { font-size: 32px; background: #fff; border: 3px solid var(--gold); border-radius: 10px; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 12px rgba(0,0,0,0.4); cursor: pointer; color: #1e293b; transition: transform 0.1s; }
-        .box-dadu-single:hover:not(.disabled) { transform: scale(1.05); }
+        .area-dadu-container { display: flex; align-items: center; gap: 10px; background: rgba(0,0,0,0.3); padding: 6px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); }
+        .box-dadu-single { font-size: 26px; background: #fff; border: 2px solid var(--gold); border-radius: 8px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 8px rgba(0,0,0,0.4); cursor: pointer; color: #1e293b; }
         .box-dadu-single.disabled { opacity: 0.4; cursor: not-allowed; filter: grayscale(1); }
 
-        #modal-kartu { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(8px); }
-        .kartu-konten { background: linear-gradient(135deg, #1e293b, #0f172a); padding: 25px; border-radius: 20px; width: 90%; max-width: 380px; text-align: center; box-shadow: 0 25px 50px rgba(0,0,0,0.8); border: 3px solid var(--gold); color: #fff; transform: scale(0.9); animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
-        @keyframes popIn { to { transform: scale(1); } }
-        .kartu-ikon { font-size: 50px; margin-bottom: 10px; }
-        .kartu-pesan { font-size: 14px; font-weight: 600; margin: 15px 0 20px 0; line-height: 1.5; color: #cbd5e1; }
-
-        @media (max-width: 900px) {
-            #hud-kiri { width: 45vw; left: 10px; top: 10px; }
-            #hud-kanan { width: 45vw; right: 10px; top: 10px; }
-            #hud-bawah { width: 95vw; flex-wrap: wrap; bottom: 10px; padding: 10px; gap: 8px; }
-            .hud-btn { padding: 8px 10px; font-size: 10px; }
+        /* --- STYLES KHUSUS PERBAIKAN TAMPILAN MOBILE --- */
+        @media (max-width: 768px) {
+            #hud-kiri {
+                top: 8px; left: 8px; right: 8px; width: auto; max-height: none; padding: 8px;
+            }
+            #hud-kanan {
+                top: auto; bottom: 80px; right: 8px; width: 180px; max-height: 100px; padding: 6px;
+                display: none; /* Disembunyikan secara default di HP agar papan tidak terhalang */
+            }
+            .statistik-container {
+                flex-direction: row; overflow-x: auto; max-height: none; gap: 6px; padding-bottom: 2px;
+            }
+            .item-statistik {
+                flex-shrink: 0; min-width: 100px; font-size: 10px; padding: 4px 6px; flex-direction: column; align-items: flex-start; gap: 2px;
+            }
+            #hud-bawah {
+                bottom: 8px; width: 96vw; padding: 8px; gap: 6px; flex-wrap: wrap; justify-content: space-between;
+            }
+            .area-dadu-container { padding: 4px 8px; gap: 6px; width: 100%; justify-content: center; }
+            .box-dadu-single { width: 34px; height: 34px; font-size: 20px; }
+            .hud-btn { padding: 8px 10px; font-size: 10px; flex-grow: 1; text-align: center; }
         }
     </style>
 </head>
@@ -76,7 +85,7 @@
 
     <div id="hud-kiri" class="hud-panel">
         <div class="header-ui">
-            <h2>STATISTIK PEMAIN</h2>
+            <h2>PEMAIN</h2>
             <select id="jumlah-pemain" onchange="inisialisasiGame()">
                 <option value="bot">🤖 VS Bot AI</option>
                 <option value="2">2 Pemain</option>
@@ -89,38 +98,26 @@
 
     <div id="hud-kanan" class="hud-panel">
         <div class="header-ui">
-            <h2>LOG AKTIVITAS</h2>
-            <div style="display:flex; gap:4px;">
-                <button class="btn-aksi-header" onclick="resetSudutKamera()" title="Reset Kamera">🔄 RESET</button>
-            </div>
+            <h2>LOG</h2>
+            <button class="btn-aksi-header" onclick="resetSudutKamera()" title="Reset Kamera">🔄 RESET</button>
         </div>
         <div id="log-game"></div>
     </div>
 
     <div id="hud-bawah" class="hud-panel">
         <div class="area-dadu-container">
-            <div style="display: flex; gap: 8px;" onclick="mulaiLemparDadu()">
+            <div style="display: flex; gap: 6px;" onclick="mulaiLemparDadu()">
                 <div id="dadu-1" class="box-dadu-single">🎲</div>
                 <div id="dadu-2" class="box-dadu-single">🎲</div>
             </div>
             <div style="text-align: left;">
-                <div id="status-giliran" style="font-weight: 900; color: var(--gold); font-size: 13px; text-transform: uppercase;">Giliran: -</div>
-                <div style="font-size: 10px; opacity: 0.7;">(Ketuk Dadu)</div>
+                <div id="status-giliran" style="font-weight: 900; color: var(--gold); font-size: 11px; text-transform: uppercase;">Giliran: -</div>
             </div>
         </div>
-        <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;">
+        <div style="display: flex; gap: 6px; width: 100%; justify-content: space-between;">
             <button id="btn-beli" class="hud-btn" onclick="beliKota()" style="background: #2563eb;" disabled>🏠 Beli</button>
             <button id="btn-upgrade" class="hud-btn" onclick="upgradeKota()" style="background: #9333ea;" disabled>🏘️ Bangun</button>
-            <button id="btn-selesai" class="hud-btn" onclick="gantiGiliran()" style="background: #16a34a;" disabled>⏭️ Selesai Turn</button>
-        </div>
-    </div>
-
-    <div id="modal-kartu">
-        <div class="kartu-konten">
-            <div id="modal-kartu-ikon" class="kartu-ikon">✨</div>
-            <h3 id="judul-kartu-modal" style="font-size: 18px; font-weight: 900; margin: 0 0 5px 0; color: var(--gold); text-transform: uppercase;">Kartu</h3>
-            <p id="pesan-kartu-modal" class="kartu-pesan">Isi kartu...</p>
-            <button class="hud-btn" style="background: #16a34a; width: 100%; font-size: 14px;" onclick="tutupModalKartu()">LANJUTKAN</button>
+            <button id="btn-selesai" class="hud-btn" onclick="gantiGiliran()" style="background: #16a34a;" disabled>⏭️ Turn</button>
         </div>
     </div>
 
@@ -169,41 +166,23 @@
             const canvas = document.createElement('canvas');
             canvas.width = 128; canvas.height = 128;
             const ctx = canvas.getContext('2d');
-
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(0, 0, 128, 128);
-            ctx.strokeStyle = '#e2e8f0';
-            ctx.lineWidth = 8;
-            ctx.strokeRect(0, 0, 128, 128);
-
+            ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, 128, 128);
+            ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 8; ctx.strokeRect(0, 0, 128, 128);
             ctx.fillStyle = (number === 1) ? '#dc2626' : '#0f172a';
             const radius = (number === 1) ? 18 : 12;
-
             const dots = {
-                1: [[64, 64]],
-                2: [[32, 32], [96, 96]],
-                3: [[32, 32], [64, 64], [96, 96]],
-                4: [[32, 32], [96, 32], [32, 96], [96, 96]],
-                5: [[32, 32], [96, 32], [64, 64], [32, 96], [96, 96]],
+                1: [[64, 64]], 2: [[32, 32], [96, 96]], 3: [[32, 32], [64, 64], [96, 96]],
+                4: [[32, 32], [96, 32], [32, 96], [96, 96]], 5: [[32, 32], [96, 32], [64, 64], [32, 96], [96, 96]],
                 6: [[32, 32], [96, 32], [32, 64], [96, 64], [32, 96], [96, 96]]
             };
-
-            dots[number].forEach(pos => {
-                ctx.beginPath();
-                ctx.arc(pos[0], pos[1], radius, 0, Math.PI * 2);
-                ctx.fill();
-            });
-
-            const texture = new THREE.CanvasTexture(canvas);
-            texture.needsUpdate = true;
-            return texture;
+            dots[number].forEach(pos => { ctx.beginPath(); ctx.arc(pos[0], pos[1], radius, 0, Math.PI * 2); ctx.fill(); });
+            const texture = new THREE.CanvasTexture(canvas); texture.needsUpdate = true; return texture;
         }
 
         function createTileTextTexture(index, name, type, price, colorHex) {
             const canvas = document.createElement('canvas');
             canvas.width = 256; canvas.height = 256;
             const ctx = canvas.getContext('2d');
-
             ctx.fillStyle = '#fef08a';
             if (type === 'sudut') ctx.fillStyle = '#facc15';
             else if (type === 'kesempatan') ctx.fillStyle = '#fb923c';
@@ -212,51 +191,23 @@
 
             if (type === 'kota') {
                 ctx.fillStyle = '#' + colorHex.toString(16).padStart(6, '0');
-                ctx.fillRect(0, 0, 256, 75);
-                ctx.strokeStyle = '#0f172a';
-                ctx.lineWidth = 6;
-                ctx.strokeRect(0, 0, 256, 75);
+                ctx.fillRect(0, 0, 256, 75); ctx.strokeStyle = '#0f172a'; ctx.lineWidth = 6; ctx.strokeRect(0, 0, 256, 75);
             }
+            ctx.strokeStyle = '#334155'; ctx.lineWidth = 10; ctx.strokeRect(0, 0, 256, 256);
+            ctx.fillStyle = '#0f172a'; ctx.font = '900 24px Arial'; ctx.textAlign = 'right'; ctx.fillText('#' + index, 240, 105);
 
-            ctx.strokeStyle = '#334155';
-            ctx.lineWidth = 10;
-            ctx.strokeRect(0, 0, 256, 256);
-
-            ctx.fillStyle = '#0f172a';
-            ctx.font = '900 24px Arial';
-            ctx.textAlign = 'right';
-            ctx.fillText('#' + index, 240, 105);
-
-            ctx.textAlign = 'center';
-            ctx.font = '900 28px Arial';
-            ctx.fillStyle = '#ffffff';
-            ctx.strokeStyle = '#000000';
-            ctx.lineWidth = 6;
-
-            const words = name.split(' ');
-            let yPos = type === 'kota' ? 145 : 130;
-
+            ctx.textAlign = 'center'; ctx.font = '900 28px Arial'; ctx.fillStyle = '#ffffff'; ctx.strokeStyle = '#000000'; ctx.lineWidth = 6;
+            const words = name.split(' '); let yPos = type === 'kota' ? 145 : 130;
             if (words.length > 1 && name.length > 9) {
-                ctx.strokeText(words[0], 128, yPos - 12);
-                ctx.fillText(words[0], 128, yPos - 12);
-                ctx.strokeText(words.slice(1).join(' '), 128, yPos + 22);
-                ctx.fillText(words.slice(1).join(' '), 128, yPos + 22);
-            } else {
-                ctx.strokeText(name, 128, yPos);
-                ctx.fillText(name, 128, yPos);
-            }
+                ctx.strokeText(words[0], 128, yPos - 12); ctx.fillText(words[0], 128, yPos - 12);
+                ctx.strokeText(words.slice(1).join(' '), 128, yPos + 22); ctx.fillText(words.slice(1).join(' '), 128, yPos + 22);
+            } else { ctx.strokeText(name, 128, yPos); ctx.fillText(name, 128, yPos); }
 
             if (price > 0) {
-                ctx.fillStyle = '#0f172a';
-                ctx.fillRect(35, 200, 186, 38);
-                ctx.fillStyle = '#f6c84c';
-                ctx.font = 'bold 20px Arial';
-                ctx.fillText('Rp ' + (price / 1000) + 'k', 128, 226);
+                ctx.fillStyle = '#0f172a'; ctx.fillRect(35, 200, 186, 38);
+                ctx.fillStyle = '#f6c84c'; ctx.font = 'bold 20px Arial'; ctx.fillText('Rp ' + (price / 1000) + 'k', 128, 226);
             }
-
-            const texture = new THREE.CanvasTexture(canvas);
-            texture.needsUpdate = true;
-            return texture;
+            const texture = new THREE.CanvasTexture(canvas); texture.needsUpdate = true; return texture;
         }
 
         function init3DScene() {
@@ -266,7 +217,10 @@
             scene.fog = new THREE.FogExp2(0x0a0f24, 0.01);
 
             camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.set(0, 22, 26);
+            
+            // Penyesuaian Kamera Awal untuk Layar HP
+            const isMobile = window.innerWidth <= 768;
+            camera.position.set(0, isMobile ? 32 : 22, isMobile ? 32 : 26);
 
             renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
@@ -276,21 +230,14 @@
             container.appendChild(renderer.domElement);
 
             controls = new THREE.OrbitControls(camera, renderer.domElement);
-            controls.enableDamping = true;
-            controls.dampingFactor = 0.05;
-            controls.maxPolarAngle = Math.PI / 2.1;
-            controls.minDistance = 10;
-            controls.maxDistance = 50;
+            controls.enableDamping = true; controls.dampingFactor = 0.05;
+            controls.maxPolarAngle = Math.PI / 2.1; controls.minDistance = 8; controls.maxDistance = 60;
             controls.target.set(0, 0, 0);
 
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.85);
-            scene.add(ambientLight);
-
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.85); scene.add(ambientLight);
             const dirLight = new THREE.DirectionalLight(0xfffaed, 1.2);
-            dirLight.position.set(20, 40, 20);
-            dirLight.castShadow = true;
-            dirLight.shadow.mapSize.width = 2048;
-            dirLight.shadow.mapSize.height = 2048;
+            dirLight.position.set(20, 40, 20); dirLight.castShadow = true;
+            dirLight.shadow.mapSize.width = 2048; dirLight.shadow.mapSize.height = 2048;
             scene.add(dirLight);
 
             buatPapan3D();
@@ -307,172 +254,111 @@
         }
 
         function resetSudutKamera() {
-            isPOVMode = false;
-            controls.enabled = true;
+            isPOVMode = false; controls.enabled = true;
+            const isMobile = window.innerWidth <= 768;
             new TWEEN.Tween(camera.position)
-                .to({ x: 0, y: 22, z: 26 }, 800)
-                .easing(TWEEN.Easing.Cubic.Out)
-                .start();
+                .to({ x: 0, y: isMobile ? 32 : 22, z: isMobile ? 32 : 26 }, 800)
+                .easing(TWEEN.Easing.Cubic.Out).start();
             new TWEEN.Tween(controls.target)
                 .to({ x: 0, y: 0, z: 0 }, 800)
-                .easing(TWEEN.Easing.Cubic.Out)
-                .start();
+                .easing(TWEEN.Easing.Cubic.Out).start();
         }
 
         function setPOVFollowCamera(targetPos3D) {
-            isPOVMode = true;
-            controls.enabled = false;
+            isPOVMode = true; controls.enabled = false;
             const camTargetX = targetPos3D.x * 1.2;
             const camTargetZ = targetPos3D.z * 1.2 + 6;
             
             new TWEEN.Tween(camera.position)
                 .to({ x: camTargetX, y: 7, z: camTargetZ }, 400)
-                .easing(TWEEN.Easing.Quadratic.Out)
-                .start();
+                .easing(TWEEN.Easing.Quadratic.Out).start();
 
             new TWEEN.Tween(controls.target)
                 .to({ x: targetPos3D.x, y: targetPos3D.y + 0.5, z: targetPos3D.z }, 400)
-                .easing(TWEEN.Easing.Quadratic.Out)
-                .start();
+                .easing(TWEEN.Easing.Quadratic.Out).start();
         }
 
         function resetPOVToOverviewCamera() {
-            isPOVMode = false;
-            controls.enabled = true;
+            isPOVMode = false; controls.enabled = true;
+            const isMobile = window.innerWidth <= 768;
             new TWEEN.Tween(camera.position)
-                .to({ x: 0, y: 22, z: 26 }, 800)
-                .easing(TWEEN.Easing.Cubic.Out)
-                .start();
+                .to({ x: 0, y: isMobile ? 32 : 22, z: isMobile ? 32 : 26 }, 800)
+                .easing(TWEEN.Easing.Cubic.Out).start();
             new TWEEN.Tween(controls.target)
                 .to({ x: 0, y: 0, z: 0 }, 800)
-                .easing(TWEEN.Easing.Cubic.Out)
-                .start();
+                .easing(TWEEN.Easing.Cubic.Out).start();
         }
 
         function getTilePosition3D(index) {
-            const boardSize = 18;
-            const tileSize = boardSize / 11;
-            const halfBoard = boardSize / 2;
+            const boardSize = 18; const tileSize = boardSize / 11; const halfBoard = boardSize / 2;
             let x = 0, z = 0;
-
-            if (index <= 10) {
-                x = halfBoard - (index * tileSize) - (tileSize/2);
-                z = halfBoard - (tileSize/2);
-            } else if (index <= 20) {
-                x = -halfBoard + (tileSize/2);
-                z = halfBoard - ((index - 10) * tileSize) - (tileSize/2);
-            } else if (index <= 30) {
-                x = -halfBoard + ((index - 20) * tileSize) + (tileSize/2);
-                z = -halfBoard + (tileSize/2);
-            } else {
-                x = halfBoard - (tileSize/2);
-                z = -halfBoard + ((index - 30) * tileSize) + (tileSize/2);
-            }
+            if (index <= 10) { x = halfBoard - (index * tileSize) - (tileSize/2); z = halfBoard - (tileSize/2); }
+            else if (index <= 20) { x = -halfBoard + (tileSize/2); z = halfBoard - ((index - 10) * tileSize) - (tileSize/2); }
+            else if (index <= 30) { x = -halfBoard + ((index - 20) * tileSize) + (tileSize/2); z = -halfBoard + (tileSize/2); }
+            else { x = halfBoard - (tileSize/2); z = -halfBoard + ((index - 30) * tileSize) + (tileSize/2); }
             return { x, y: 0.6, z };
         }
 
         function buatPapan3D() {
-            boardGroup = new THREE.Group();
-            scene.add(boardGroup);
-
+            boardGroup = new THREE.Group(); scene.add(boardGroup);
             const baseGeo = new THREE.BoxGeometry(19, 1, 19);
             const baseMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.3 });
-            const baseMesh = new THREE.Mesh(baseGeo, baseMat);
-            baseMesh.position.y = -0.5;
-            baseMesh.receiveShadow = true;
+            const baseMesh = new THREE.Mesh(baseGeo, baseMat); baseMesh.position.y = -0.5; baseMesh.receiveShadow = true;
             boardGroup.add(baseMesh);
 
             const borderGeo = new THREE.BoxGeometry(19.4, 0.8, 19.4);
             const borderMat = new THREE.MeshStandardMaterial({ color: 0xf6c84c, metalness: 0.8, roughness: 0.2 });
-            const borderMesh = new THREE.Mesh(borderGeo, borderMat);
-            borderMesh.position.y = -0.6;
+            const borderMesh = new THREE.Mesh(borderGeo, borderMat); borderMesh.position.y = -0.6;
             boardGroup.add(borderMesh);
 
             const centerGeo = new THREE.PlaneGeometry(14.6, 14.6);
-            const centerCanvas = document.createElement('canvas');
-            centerCanvas.width = 512; centerCanvas.height = 512;
+            const centerCanvas = document.createElement('canvas'); centerCanvas.width = 512; centerCanvas.height = 512;
             const cctx = centerCanvas.getContext('2d');
-            cctx.fillStyle = '#0f172a';
-            cctx.fillRect(0, 0, 512, 512);
-            
-            cctx.fillStyle = '#f6c84c';
-            cctx.font = 'bold 44px Arial';
-            cctx.textAlign = 'center';
-            cctx.fillText('MONOPOLI 3D', 256, 230);
-            cctx.fillStyle = '#38bdf8';
-            cctx.font = 'bold 28px Arial';
-            cctx.fillText('JELAJAH NUSANTARA', 256, 280);
+            cctx.fillStyle = '#0f172a'; cctx.fillRect(0, 0, 512, 512);
+            cctx.fillStyle = '#f6c84c'; cctx.font = 'bold 44px Arial'; cctx.textAlign = 'center'; cctx.fillText('MONOPOLI 3D', 256, 230);
+            cctx.fillStyle = '#38bdf8'; cctx.font = 'bold 28px Arial'; cctx.fillText('JELAJAH NUSANTARA', 256, 280);
 
             const centerTexture = new THREE.CanvasTexture(centerCanvas);
             const centerMat = new THREE.MeshStandardMaterial({ map: centerTexture, roughness: 0.5 });
             const centerMesh = new THREE.Mesh(centerGeo, centerMat);
-            centerMesh.rotation.x = -Math.PI / 2;
-            centerMesh.position.y = 0.05;
+            centerMesh.rotation.x = -Math.PI / 2; centerMesh.position.y = 0.05;
             boardGroup.add(centerMesh);
 
             for (let i = 0; i < totalPetak; i++) {
-                const pos = getTilePosition3D(i);
-                const pData = petaData[i];
-
+                const pos = getTilePosition3D(i); const pData = petaData[i];
                 const tileGeo = new THREE.BoxGeometry(1.55, 0.2, 1.55);
                 const tileTexture = createTileTextTexture(i, pData.nama, pData.tipe, pData.harga, pData.warnaHex);
-                
                 const tileMaterials = [
-                    new THREE.MeshStandardMaterial({ color: 0x334155 }),
-                    new THREE.MeshStandardMaterial({ color: 0x334155 }),
-                    new THREE.MeshStandardMaterial({ map: tileTexture, roughness: 0.2 }),
-                    new THREE.MeshStandardMaterial({ color: 0x334155 }),
-                    new THREE.MeshStandardMaterial({ color: 0x334155 }),
-                    new THREE.MeshStandardMaterial({ color: 0x334155 })
+                    new THREE.MeshStandardMaterial({ color: 0x334155 }), new THREE.MeshStandardMaterial({ color: 0x334155 }),
+                    new THREE.MeshStandardMaterial({ map: tileTexture, roughness: 0.2 }), new THREE.MeshStandardMaterial({ color: 0x334155 }),
+                    new THREE.MeshStandardMaterial({ color: 0x334155 }), new THREE.MeshStandardMaterial({ color: 0x334155 })
                 ];
-
-                const tileMesh = new THREE.Mesh(tileGeo, tileMaterials);
-                tileMesh.position.set(pos.x, 0.1, pos.z);
-                
+                const tileMesh = new THREE.Mesh(tileGeo, tileMaterials); tileMesh.position.set(pos.x, 0.1, pos.z);
                 if (i > 0 && i < 10) tileMesh.rotation.y = 0;
                 else if (i >= 10 && i < 20) tileMesh.rotation.y = Math.PI / 2;
                 else if (i >= 20 && i < 30) tileMesh.rotation.y = Math.PI;
                 else if (i >= 30) tileMesh.rotation.y = -Math.PI / 2;
-
-                tileMesh.receiveShadow = true;
-                boardGroup.add(tileMesh);
+                tileMesh.receiveShadow = true; boardGroup.add(tileMesh);
             }
         }
 
         function buatKarakterChibi3D(colorHex) {
             const group = new THREE.Group();
-
             const bodyGeo = new THREE.CylinderGeometry(0.25, 0.35, 0.7, 16);
             const bodyMat = new THREE.MeshStandardMaterial({ color: colorHex, roughness: 0.3 });
-            const body = new THREE.Mesh(bodyGeo, bodyMat);
-            body.position.y = 0.35;
-            body.castShadow = true;
-            group.add(body);
-
+            const body = new THREE.Mesh(bodyGeo, bodyMat); body.position.y = 0.35; body.castShadow = true; group.add(body);
             const headGeo = new THREE.SphereGeometry(0.45, 32, 32);
             const headMat = new THREE.MeshStandardMaterial({ color: 0xffdbac, roughness: 0.5 });
-            const head = new THREE.Mesh(headGeo, headMat);
-            head.position.y = 0.95;
-            head.castShadow = true;
-            group.add(head);
-
+            const head = new THREE.Mesh(headGeo, headMat); head.position.y = 0.95; head.castShadow = true; group.add(head);
             const eyeGeo = new THREE.SphereGeometry(0.08, 16, 16);
             const eyeMat = new THREE.MeshBasicMaterial({ color: 0x0f172a });
-            const leftEye = new THREE.Mesh(eyeGeo, eyeMat);
-            leftEye.position.set(-0.15, 1.0, 0.38);
-            const rightEye = new THREE.Mesh(eyeGeo, eyeMat);
-            rightEye.position.set(0.15, 1.0, 0.38);
-            group.add(leftEye);
-            group.add(rightEye);
-
+            const leftEye = new THREE.Mesh(eyeGeo, eyeMat); leftEye.position.set(-0.15, 1.0, 0.38);
+            const rightEye = new THREE.Mesh(eyeGeo, eyeMat); rightEye.position.set(0.15, 1.0, 0.38);
+            group.add(leftEye); group.add(rightEye);
             const crownGeo = new THREE.ConeGeometry(0.25, 0.3, 6);
             const crownMat = new THREE.MeshStandardMaterial({ color: 0xf6c84c, metalness: 0.8 });
-            const crown = new THREE.Mesh(crownGeo, crownMat);
-            crown.position.y = 1.45;
-            group.add(crown);
-
-            group.scale.set(0.75, 0.75, 0.75);
-            return group;
+            const crown = new THREE.Mesh(crownGeo, crownMat); crown.position.y = 1.45; group.add(crown);
+            group.scale.set(0.75, 0.75, 0.75); return group;
         }
 
         function buatDadu3D() {
@@ -484,121 +370,81 @@
                 new THREE.MeshStandardMaterial({ map: createDiceFaceTexture(3), roughness: 0.2 }),
                 new THREE.MeshStandardMaterial({ map: createDiceFaceTexture(4), roughness: 0.2 })
             ];
-
             for (let i = 0; i < 2; i++) {
                 const geo = new THREE.BoxGeometry(1.2, 1.2, 1.2);
                 const dice = new THREE.Mesh(geo, diceMaterials);
-                dice.castShadow = true;
-                dice.position.set((i === 0 ? -1.8 : 1.8), 8, 0);
-                dice.visible = false;
-                scene.add(dice);
-                dice3D.push(dice);
+                dice.castShadow = true; dice.position.set((i === 0 ? -1.8 : 1.8), 8, 0); dice.visible = false;
+                scene.add(dice); dice3D.push(dice);
             }
         }
 
         function setDiceRotationToNumber(diceMesh, number) {
             const rotations = {
-                1: { x: 0, z: -Math.PI / 2 },
-                2: { x: 0, z: 0 },
-                3: { x: -Math.PI / 2, z: 0 },
-                4: { x: Math.PI / 2, z: 0 },
-                5: { x: Math.PI, z: 0 },
-                6: { x: 0, z: Math.PI / 2 }
+                1: { x: 0, z: -Math.PI / 2 }, 2: { x: 0, z: 0 }, 3: { x: -Math.PI / 2, z: 0 },
+                4: { x: Math.PI / 2, z: 0 }, 5: { x: Math.PI, z: 0 }, 6: { x: 0, z: Math.PI / 2 }
             };
-            const rot = rotations[number];
-            diceMesh.rotation.set(rot.x, 0, rot.z);
+            const rot = rotations[number]; diceMesh.rotation.set(rot.x, 0, rot.z);
         }
 
-        // --- RENDER TANDA KEPEMILIKAN 3D & BANGUNAN ---
         function renderBangunan3D(petakIndex, level, warnaPemilikHex) {
             const key = `b_${petakIndex}`;
             if (buildingMeshes[key]) scene.remove(buildingMeshes[key]);
-
-            const group = new THREE.Group();
-            const pos = getTilePosition3D(petakIndex);
+            const group = new THREE.Group(); const pos = getTilePosition3D(petakIndex);
             group.position.set(pos.x, 0.2, pos.z);
 
-            // Ring Glow Kepemilikan 3D
             const ringGeo = new THREE.RingGeometry(0.65, 0.75, 32);
             const ringMat = new THREE.MeshBasicMaterial({ color: warnaPemilikHex, side: THREE.DoubleSide });
-            const ringMesh = new THREE.Mesh(ringGeo, ringMat);
-            ringMesh.rotation.x = Math.PI / 2;
-            ringMesh.position.y = 0.02;
+            const ringMesh = new THREE.Mesh(ringGeo, ringMat); ringMesh.rotation.x = Math.PI / 2; ringMesh.position.y = 0.02;
             group.add(ringMesh);
 
-            // Bendera Kepemilikan (Ownership Flag)
             const flagPoleGeo = new THREE.CylinderGeometry(0.02, 0.02, 0.7);
             const flagPoleMat = new THREE.MeshStandardMaterial({ color: 0xffffff });
-            const flagPole = new THREE.Mesh(flagPoleGeo, flagPoleMat);
-            flagPole.position.set(0.45, 0.35, 0.45);
-            group.add(flagPole);
-
+            const flagPole = new THREE.Mesh(flagPoleGeo, flagPoleMat); flagPole.position.set(0.45, 0.35, 0.45); group.add(flagPole);
             const bannerGeo = new THREE.BoxGeometry(0.28, 0.18, 0.04);
             const bannerMat = new THREE.MeshStandardMaterial({ color: warnaPemilikHex });
-            const banner = new THREE.Mesh(bannerGeo, bannerMat);
-            banner.position.set(0.56, 0.6, 0.45);
-            group.add(banner);
+            const banner = new THREE.Mesh(bannerGeo, bannerMat); banner.position.set(0.56, 0.6, 0.45); group.add(banner);
 
-            // Model Bangunan (Rumah / Hotel)
             if (level <= 4 && level > 0) {
                 for (let i = 0; i < level; i++) {
                     const houseGeo = new THREE.BoxGeometry(0.3, 0.3, 0.3);
                     const houseMat = new THREE.MeshStandardMaterial({ color: 0x22c55e });
-                    const house = new THREE.Mesh(houseGeo, houseMat);
-                    house.castShadow = true;
-                    house.position.set(-0.3 + (i * 0.2), 0.15, 0);
-                    group.add(house);
+                    const house = new THREE.Mesh(houseGeo, houseMat); house.castShadow = true;
+                    house.position.set(-0.3 + (i * 0.2), 0.15, 0); group.add(house);
                 }
             } else if (level === 5) {
                 const hotelGeo = new THREE.CylinderGeometry(0.28, 0.4, 0.85, 8);
                 const hotelMat = new THREE.MeshStandardMaterial({ color: 0xef4444, metalness: 0.5 });
-                const hotel = new THREE.Mesh(hotelGeo, hotelMat);
-                hotel.castShadow = true;
-                hotel.position.y = 0.42;
-                group.add(hotel);
+                const hotel = new THREE.Mesh(hotelGeo, hotelMat); hotel.castShadow = true;
+                hotel.position.y = 0.42; group.add(hotel);
             }
-
-            scene.add(group);
-            buildingMeshes[key] = group;
+            scene.add(group); buildingMeshes[key] = group;
         }
 
         function inisialisasiGame() {
             const val = document.getElementById('jumlah-pemain').value;
-            
-            players3D.forEach(p => scene.remove(p));
-            players3D = [];
-            Object.keys(buildingMeshes).forEach(k => { scene.remove(buildingMeshes[k]); });
-            buildingMeshes = {};
-
+            players3D.forEach(p => scene.remove(p)); players3D = [];
+            Object.keys(buildingMeshes).forEach(k => { scene.remove(buildingMeshes[k]); }); buildingMeshes = {};
             pemain = []; gameSelesai = false;
             
             const num = val === 'bot' ? 2 : parseInt(val);
             for (let i = 0; i < num; i++) {
                 const isBot = (val === 'bot' && i === 1);
                 pemain.push({
-                    id: i + 1,
-                    nama: isBot ? "Bot AI" : namaWarnaPion[i],
-                    warna: warnaPionStr[i],
-                    warnaHex: warnaPionHex[i],
-                    uang: 2500000, posisi: 0, totalPutaran: 0, diPenjara: false, isBot: isBot, isBangkrut: false
+                    id: i + 1, nama: isBot ? "Bot AI" : namaWarnaPion[i], warna: warnaPionStr[i],
+                    warnaHex: warnaPionHex[i], uang: 2500000, posisi: 0, totalPutaran: 0, diPenjara: false, isBot: isBot, isBangkrut: false
                 });
-
                 const p3d = buatKarakterChibi3D(warnaPionHex[i]);
                 const pos = getTilePosition3D(0);
                 p3d.position.set(pos.x + (i * 0.25 - 0.3), pos.y, pos.z + (i * 0.25 - 0.3));
-                scene.add(p3d);
-                players3D.push(p3d);
+                scene.add(p3d); players3D.push(p3d);
             }
 
             petaData.forEach(p => { p.pemilik = null; p.level = 0; p.isGadai = false; });
             giliranIndex = 0; sudahLempar = false; sedangBerjalan = false;
             document.getElementById('log-game').innerHTML = '';
-            tulisLog(`🎮 Game Monopoli 3D dimulai! (Bangun kota terbuka setelah 1 putaran)`);
-            perbaruiTampilan();
+            tulisLog(`🎮 Game Monopoli 3D dimulai!`); perbaruiTampilan();
 
-            if (pemain[giliranIndex].isBot) {
-                setTimeout(eksekusiLemparDadu, 1000);
-            }
+            if (pemain[giliranIndex].isBot) { setTimeout(eksekusiLemparDadu, 1000); }
         }
 
         function gerakkanKarakter3D(playerIndex, targetPos, callback) {
@@ -608,191 +454,108 @@
             
             function step() {
                 if (current === targetPos) {
-                    setTimeout(() => {
-                        resetPOVToOverviewCamera();
-                        if (callback) callback();
-                    }, 400);
-                    return;
+                    setTimeout(() => { resetPOVToOverviewCamera(); if (callback) callback(); }, 400); return;
                 }
                 current = (current + 1) % totalPetak;
                 const nextCoords = getTilePosition3D(current);
-
                 setPOVFollowCamera(nextCoords);
 
-                new TWEEN.Tween(p3d.position)
-                    .to({ x: nextCoords.x, z: nextCoords.z }, 320)
-                    .easing(TWEEN.Easing.Quadratic.Out)
-                    .start();
-
-                new TWEEN.Tween(p3d.position)
-                    .to({ y: [nextCoords.y + 1.2, nextCoords.y] }, 320)
-                    .easing(TWEEN.Easing.Quadratic.Out)
+                new TWEEN.Tween(p3d.position).to({ x: nextCoords.x, z: nextCoords.z }, 320).easing(TWEEN.Easing.Quadratic.Out).start();
+                new TWEEN.Tween(p3d.position).to({ y: [nextCoords.y + 1.2, nextCoords.y] }, 320).easing(TWEEN.Easing.Quadratic.Out)
                     .onComplete(() => {
                         pemain[playerIndex].posisi = current;
                         if (current === 0) {
-                            pemain[playerIndex].totalPutaran++;
-                            pemain[playerIndex].uang += 200000;
-                            tulisLog(`🎉 ${pemain[playerIndex].nama} melewati START (Putaran ke-${pemain[playerIndex].totalPutaran}, +200k)`);
-                            perbaruiTampilan();
+                            pemain[playerIndex].totalPutaran++; pemain[playerIndex].uang += 200000;
+                            tulisLog(`🎉 ${pemain[playerIndex].nama} lewat START (+200k)`); perbaruiTampilan();
                         }
                         step();
-                    })
-                    .start();
+                    }).start();
             }
             step();
         }
 
         function mulaiLemparDadu() {
             if (gameSelesai || sudahLempar || sedangBerjalan) return;
-            const p = pemain[giliranIndex];
-            if (p.isBot || p.isBangkrut) return;
+            const p = pemain[giliranIndex]; if (p.isBot || p.isBangkrut) return;
             eksekusiLemparDadu();
         }
 
         function eksekusiLemparDadu() {
             sedangBerjalan = true;
-            const h1 = Math.floor(Math.random() * 6) + 1;
-            const h2 = Math.floor(Math.random() * 6) + 1;
-            const total = h1 + h2;
-
-            document.getElementById('dadu-1').innerText = h1;
-            document.getElementById('dadu-2').innerText = h2;
+            const h1 = Math.floor(Math.random() * 6) + 1; const h2 = Math.floor(Math.random() * 6) + 1; const total = h1 + h2;
+            document.getElementById('dadu-1').innerText = h1; document.getElementById('dadu-2').innerText = h2;
 
             dice3D.forEach((d, index) => {
-                const targetVal = index === 0 ? h1 : h2;
-                d.visible = true;
-                d.position.y = 8;
-                
-                new TWEEN.Tween(d.rotation)
-                    .to({ x: Math.PI * 6, y: Math.PI * 6 }, 500)
-                    .start();
-
-                new TWEEN.Tween(d.position)
-                    .to({ y: 0.8 }, 600)
-                    .easing(TWEEN.Easing.Bounce.Out)
-                    .onComplete(() => {
-                        setDiceRotationToNumber(d, targetVal);
-                        setTimeout(() => { d.visible = false; }, 900);
-                    })
-                    .start();
+                const targetVal = index === 0 ? h1 : h2; d.visible = true; d.position.y = 8;
+                new TWEEN.Tween(d.rotation).to({ x: Math.PI * 6, y: Math.PI * 6 }, 500).start();
+                new TWEEN.Tween(d.position).to({ y: 0.8 }, 600).easing(TWEEN.Easing.Bounce.Out)
+                    .onComplete(() => { setDiceRotationToNumber(d, targetVal); setTimeout(() => { d.visible = false; }, 900); }).start();
             });
 
             setTimeout(() => {
-                const p = pemain[giliranIndex];
-                tulisLog(`🎲 ${p.nama} melempar dadu: ${h1} + ${h2} = ${total}`);
-                
+                const p = pemain[giliranIndex]; tulisLog(`🎲 ${p.nama} melempar dadu: ${h1} + ${h2} = ${total}`);
                 const nextPos = (p.posisi + total) % totalPetak;
-                gerakkanKarakter3D(giliranIndex, nextPos, () => {
-                    sedangBerjalan = false;
-                    sudahLempar = true;
-                    prosesPetak(p);
-                });
+                gerakkanKarakter3D(giliranIndex, nextPos, () => { sedangBerjalan = false; sudahLempar = true; prosesPetak(p); });
             }, 700);
         }
 
         function prosesPetak(p) {
             const pt = petaData[p.posisi];
-            if (pt.tipe === 'pajak') {
-                p.uang -= 150000;
-                tulisLog(`💸 ${p.nama} bayar pajak Rp 150k`);
-            } else if (pt.pemilik && pt.pemilik.id !== p.id && !pt.isGadai) {
-                const sewa = pt.sewaDasar * (pt.level + 1);
-                p.uang -= sewa;
-                pt.pemilik.uang += sewa;
+            if (pt.tipe === 'pajak') { p.uang -= 150000; tulisLog(`💸 ${p.nama} bayar pajak Rp 150k`); }
+            else if (pt.pemilik && pt.pemilik.id !== p.id && !pt.isGadai) {
+                const sewa = pt.sewaDasar * (pt.level + 1); p.uang -= sewa; pt.pemilik.uang += sewa;
                 tulisLog(`💸 ${p.nama} bayar sewa Rp ${sewa/1000}k ke ${pt.pemilik.nama}`);
             }
-            cekBangkrut(p);
-            perbaruiTampilan();
-
-            if (p.isBot && !gameSelesai) {
-                setTimeout(botAIAction, 1000);
-            }
+            cekBangkrut(p); perbaruiTampilan();
+            if (p.isBot && !gameSelesai) { setTimeout(botAIAction, 1000); }
         }
 
         function botAIAction() {
-            const p = pemain[giliranIndex];
-            const pt = petaData[p.posisi];
-
+            const p = pemain[giliranIndex]; const pt = petaData[p.posisi];
             if (pt.harga > 0 && !pt.pemilik && p.uang >= pt.harga) {
-                p.uang -= pt.harga;
-                pt.pemilik = p;
-                renderBangunan3D(pt.id, 0, p.warnaHex);
-                tulisLog(`🤖 Bot AI membeli tanah ${pt.nama}`);
+                p.uang -= pt.harga; pt.pemilik = p; renderBangunan3D(pt.id, 0, p.warnaHex); tulisLog(`🤖 Bot AI membeli ${pt.nama}`);
             } else if (pt.pemilik?.id === p.id && p.totalPutaran >= 1 && pt.level < 5 && p.uang >= pt.hargaRumah) {
-                p.uang -= pt.hargaRumah;
-                pt.level++;
-                renderBangunan3D(pt.id, pt.level, p.warnaHex);
-                tulisLog(`🤖 Bot AI upgrade kota di ${pt.nama}`);
+                p.uang -= pt.hargaRumah; pt.level++; renderBangunan3D(pt.id, pt.level, p.warnaHex); tulisLog(`🤖 Bot AI upgrade ${pt.nama}`);
             }
-            perbaruiTampilan();
-            setTimeout(gantiGiliran, 1200);
+            perbaruiTampilan(); setTimeout(gantiGiliran, 1200);
         }
 
         function beliKota() {
-            const p = pemain[giliranIndex];
-            const pt = petaData[p.posisi];
+            const p = pemain[giliranIndex]; const pt = petaData[p.posisi];
             if (p.uang >= pt.harga && !pt.pemilik) {
-                p.uang -= pt.harga;
-                pt.pemilik = p;
-                renderBangunan3D(pt.id, 0, p.warnaHex);
-                tulisLog(`🏠 ${p.nama} membeli kota ${pt.nama}`);
-                perbaruiTampilan();
+                p.uang -= pt.harga; pt.pemilik = p; renderBangunan3D(pt.id, 0, p.warnaHex);
+                tulisLog(`🏠 ${p.nama} membeli ${pt.nama}`); perbaruiTampilan();
             }
         }
 
         function upgradeKota() {
-            const p = pemain[giliranIndex];
-            const pt = petaData[p.posisi];
-            
-            if (p.totalPutaran < 1) {
-                tulisLog(`⚠️ Harap selesaikan 1 putaran dahulu sebelum membangun!`);
-                return;
-            }
-
+            const p = pemain[giliranIndex]; const pt = petaData[p.posisi];
+            if (p.totalPutaran < 1) { tulisLog(`⚠️ Butuh 1 putaran dahulu!`); return; }
             if (pt.pemilik?.id === p.id && pt.level < 5 && p.uang >= pt.hargaRumah) {
-                p.uang -= pt.hargaRumah;
-                pt.level++;
-                renderBangunan3D(pt.id, pt.level, p.warnaHex);
-                tulisLog(`🏘️ ${p.nama} membangun di ${pt.nama}`);
-                perbaruiTampilan();
+                p.uang -= pt.hargaRumah; pt.level++; renderBangunan3D(pt.id, pt.level, p.warnaHex);
+                tulisLog(`🏘️ ${p.nama} membangun di ${pt.nama}`); perbaruiTampilan();
             }
         }
 
         function gantiGiliran() {
-            if (sedangBerjalan) return;
-            sudahLempar = false;
-            sedangBerjalan = false;
-
+            if (sedangBerjalan) return; sudahLempar = false; sedangBerjalan = false;
             let count = 0;
-            do {
-                giliranIndex = (giliranIndex + 1) % pemain.length;
-                count++;
-            } while (pemain[giliranIndex].isBangkrut && count < pemain.length);
-            
-            perbaruiTampilan();
-            tulisLog(`👉 Giliran: ${pemain[giliranIndex].nama}`);
-
-            if (pemain[giliranIndex].isBot && !pemain[giliranIndex].isBangkrut) {
-                setTimeout(eksekusiLemparDadu, 1000);
-            }
+            do { giliranIndex = (giliranIndex + 1) % pemain.length; count++; } while (pemain[giliranIndex].isBangkrut && count < pemain.length);
+            perbaruiTampilan(); tulisLog(`👉 Giliran: ${pemain[giliranIndex].nama}`);
+            if (pemain[giliranIndex].isBot && !pemain[giliranIndex].isBangkrut) { setTimeout(eksekusiLemparDadu, 1000); }
         }
 
         function cekBangkrut(p) {
-            if (p.uang < 0) {
-                p.isBangkrut = true;
-                p.uang = 0;
-                tulisLog(`💥 ${p.nama} BANGKRUT!`);
-            }
+            if (p.uang < 0) { p.isBangkrut = true; p.uang = 0; tulisLog(`💥 ${p.nama} BANGKRUT!`); }
         }
 
         function perbaruiTampilan() {
-            const statDiv = document.getElementById('daftar-statistik');
-            statDiv.innerHTML = '';
+            const statDiv = document.getElementById('daftar-statistik'); statDiv.innerHTML = '';
             pemain.forEach((p, i) => {
                 const act = (i === giliranIndex && !gameSelesai);
                 statDiv.innerHTML += `
                     <div class="item-statistik ${act ? 'aktif' : ''} ${p.isBangkrut ? 'bangkrut' : ''}">
-                        <span><span style="color:${p.warna}">■</span> ${p.nama} (${p.totalPutaran} Lap)</span>
+                        <span><span style="color:${p.warna}">■</span> ${p.nama}</span>
                         <span style="font-family:monospace; font-weight:bold;">Rp ${(p.uang/1000)}k</span>
                     </div>`;
             });
@@ -801,32 +564,21 @@
             document.getElementById('status-giliran').innerText = `Giliran: ${pAktif.nama}`;
 
             const pt = petaData[pAktif.posisi];
-            const btnBeli = document.getElementById('btn-beli');
-            const btnUp = document.getElementById('btn-upgrade');
-            const btnSelesai = document.getElementById('btn-selesai');
-
+            const btnBeli = document.getElementById('btn-beli'); const btnUp = document.getElementById('btn-upgrade'); const btnSelesai = document.getElementById('btn-selesai');
             btnBeli.disabled = !(sudahLempar && !pAktif.isBot && pt.harga > 0 && !pt.pemilik && pAktif.uang >= pt.harga);
             btnUp.disabled = !(sudahLempar && !pAktif.isBot && pt.pemilik?.id === pAktif.id && pAktif.totalPutaran >= 1 && pt.level < 5 && pAktif.uang >= pt.hargaRumah);
             btnSelesai.disabled = !(sudahLempar && !pAktif.isBot);
         }
 
         function tulisLog(str) {
-            const log = document.getElementById('log-game');
-            log.innerHTML += `<div class="log-item">${str}</div>`;
-            log.scrollTop = log.scrollHeight;
+            const log = document.getElementById('log-game'); log.innerHTML += `<div class="log-item">${str}</div>`; log.scrollTop = log.scrollHeight;
         }
 
         function animate(time) {
-            requestAnimationFrame(animate);
-            TWEEN.update();
-            controls.update();
-            renderer.render(scene, camera);
+            requestAnimationFrame(animate); TWEEN.update(); controls.update(); renderer.render(scene, camera);
         }
 
-        window.onload = () => {
-            init3DScene();
-            inisialisasiGame();
-        };
+        window.onload = () => { init3DScene(); inisialisasiGame(); };
     </script>
 </body>
 </html>
