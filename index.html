@@ -3,323 +3,157 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Monopoli Resmi - Jelajah Nusantara</title>
+    <title>Monopoli 3D Let's Get Rich Style</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/18.6.4/tween.umd.js"></script>
     <style>
         :root {
-            --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            --board-bg: #dcedc8;
-            --petak-bg: #ffffff;
-            --petak-border: #d0d0d0;
-            --text-color: #333333;
-            --tengah-bg: radial-gradient(circle, #ffffff 0%, #f1f8e9 100%);
-            --card-bg: #ffffff;
-            --stat-bg: #fafafa;
-            --stat-border: #eeeeee;
-            --border-papan: #3e2723;
+            --wood-bg: radial-gradient(circle at 50% 30%, #1a2a6c, #b21f1f, #fdbb2d);
+            --glass-bg: rgba(15, 23, 42, 0.85);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --gold: #f6c84c;
         }
 
-        body.dark-mode {
-            --bg-gradient: linear-gradient(135deg, #1e1e2f 0%, #0f0f1a 100%);
-            --board-bg: #2a3b2c;
-            --petak-bg: #1e1e2e;
-            --petak-border: #3f3f5a;
-            --text-color: #e0e0e0;
-            --tengah-bg: radial-gradient(circle, #252538 0%, #1a1a28 100%);
-            --card-bg: #252538;
-            --stat-bg: #2d2d44;
-            --stat-border: #3f3f5a;
-            --border-papan: #1b1b1b;
+        * { box-sizing: border-box; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; user-select: none; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: var(--wood-bg); color: #fff; }
+
+        #webgl-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; cursor: grab; }
+        #webgl-container:active { cursor: grabbing; }
+
+        .hud-panel {
+            position: absolute; z-index: 10; background: var(--glass-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border); border-radius: 16px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); padding: 14px;
+            display: flex; flex-direction: column; gap: 10px; pointer-events: auto;
         }
 
-        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; touch-action: manipulation; }
-        body { background: var(--bg-gradient); margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100vw; height: 100vh; overflow: hidden; color: var(--text-color); transition: all 0.3s ease; }
-        .container { display: flex; justify-content: center; align-items: center; width: 100%; height: 100%; padding: 10px; }
-        
-        #papan-permainan { display: grid; grid-template-columns: repeat(11, 1fr); grid-template-rows: repeat(11, 1fr); width: 100%; height: 100%; max-width: min(95vw, 95vh); max-height: min(95vw, 95vh); aspect-ratio: 1 / 1; background-color: var(--board-bg); border: 4px solid var(--border-papan); border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); position: relative; }
-        .petak { background-color: var(--petak-bg); border: 1px solid var(--petak-border); font-size: clamp(4px, 1.1vw, 8.5px); display: flex; flex-direction: column; align-items: center; justify-content: space-between; text-align: center; padding: 1px; overflow: hidden; position: relative; color: var(--text-color); }
-        .petak.sudut { background: linear-gradient(135deg, #aed581, #81c784); font-weight: bold; color: #1b5e20; }
-        .petak.kesempatan { background-color: #fff9c4; color: #333; }
-        .petak.kesialan { background-color: #ffcdd2; color: #333; }
-        body.dark-mode .petak.kesempatan { background-color: #5d5322; color: #fff; }
-        body.dark-mode .petak.kesialan { background-color: #5c282d; color: #fff; }
+        #hud-kiri { top: 20px; left: 20px; width: 280px; max-height: calc(100vh - 40px); }
+        #hud-kanan { top: 20px; right: 20px; width: 280px; }
+        #hud-bawah { bottom: 20px; left: 50%; transform: translateX(-50%); width: auto; flex-direction: row; align-items: center; justify-content: center; gap: 15px; }
 
-        .nomor-petak { font-size: clamp(3px, 0.9vw, 6.5px); color: #888; font-weight: bold; }
-        .nama-petak { font-weight: 600; line-height: 1; }
-        .info-pemilik { font-size: clamp(3.5px, 0.8vw, 6px); font-weight: bold; padding: 1px 2px; border-radius: 2px; color: white; margin-top: 1px; }
+        .header-ui { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--gold); padding-bottom: 8px; }
+        .header-ui h2 { margin: 0; font-size: 13px; font-weight: 900; color: var(--gold); text-transform: uppercase; letter-spacing: 1px; }
 
-        .tengah-papan { grid-column: 2 / span 9; grid-row: 2 / span 9; display: flex; flex-direction: column; align-items: center; justify-content: space-between; background: var(--tengah-bg); border: 3px dashed #aed581; border-radius: 8px; padding: 8px; text-align: center; box-shadow: inset 0 0 15px rgba(0,0,0,0.05); position: relative; overflow: hidden; }
-        .tengah-papan h1 { color: #2e7d32; font-size: clamp(12px, 2.5vw, 18px); margin: 0; letter-spacing: 1px; }
-        body.dark-mode .tengah-papan h1 { color: #81c784; }
+        .btn-aksi-header { padding: 6px 10px; font-size: 12px; font-weight: bold; border-radius: 8px; border: none; cursor: pointer; color: white; background: #3b82f6; box-shadow: 0 4px 0 #1d4ed8; transition: all 0.1s; }
+        .btn-aksi-header:active { transform: translateY(4px); box-shadow: 0 0 0 transparent; }
+        select { padding: 6px; font-size: 12px; border-radius: 8px; border: 1px solid var(--glass-border); background: #1e293b; color: #fff; font-weight: bold; }
 
-        .header-tengah { display: flex; width: 100%; justify-content: space-between; align-items: center; background: var(--stat-bg); padding: 4px 8px; border-radius: 5px; border: 1px solid var(--stat-border); font-size: clamp(9px, 1.8vw, 11px); gap: 4px; }
-        .header-tengah select { padding: 2px 4px; font-size: clamp(9px, 1.8vw, 11px); border-radius: 3px; border: 1px solid #ccc; background: var(--card-bg); color: var(--text-color); }
+        .statistik-container { overflow-y: auto; display: flex; flex-direction: column; gap: 6px; flex-grow: 1; padding-right: 2px; }
+        .item-statistik { display: flex; justify-content: space-between; align-items: center; font-size: 12px; padding: 10px; border-radius: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); font-weight: 600; }
+        .item-statistik.aktif { background: rgba(246, 200, 76, 0.2); border-color: var(--gold); box-shadow: inset 4px 0 0 var(--gold); }
+        .item-statistik.bangkrut { opacity: 0.4; text-decoration: line-through; }
 
-        .statistik-container { width: 100%; background: var(--card-bg); border: 1px solid var(--stat-border); border-radius: 5px; padding: 4px; display: flex; flex-direction: column; gap: 3px; max-height: 22vh; overflow-y: auto; box-shadow: inset 0 1px 3px rgba(0,0,0,0.04); }
-        .item-statistik { display: flex; justify-content: space-between; align-items: center; font-size: clamp(8.5px, 1.6vw, 10.5px); padding: 3px 6px; border-radius: 4px; background: var(--stat-bg); border: 1px solid var(--stat-border); }
-        .item-statistik.aktif { background: #e8f5e9; border-color: #81c784; font-weight: bold; color: #1b5e20; }
-        body.dark-mode .item-statistik.aktif { background: #1b3820; border-color: #4caf50; color: #a5d6a7; }
-        .item-statistik.bangkrut { background: #ffebee; border-color: #ef5350; color: #c62828; text-decoration: line-through; }
-        body.dark-mode .item-statistik.bangkrut { background: #3e1f23; border-color: #e57373; color: #ef9a9a; }
+        .hud-btn { padding: 10px 16px; font-size: 13px; font-weight: 900; border-radius: 10px; border: none; cursor: pointer; color: white; box-shadow: 0 5px 0 rgba(0,0,0,0.4); transition: all 0.1s; text-transform: uppercase; }
+        .hud-btn:hover:not(:disabled) { filter: brightness(1.2); }
+        .hud-btn:active:not(:disabled) { transform: translateY(5px); box-shadow: 0 0 0 transparent; }
+        .hud-btn:disabled { background: #475569 !important; cursor: not-allowed; box-shadow: 0 5px 0 #1e293b; opacity: 0.5; }
 
-        .area-dadu-container { display: flex; align-items: center; gap: 12px; margin: 2px 0; }
-        .box-dadu-single { font-size: clamp(35px, 8vw, 50px); background: var(--card-bg); border: 2px solid #81c784; border-radius: 10px; width: clamp(50px, 11vw, 70px); height: clamp(50px, 11vw, 70px); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.18); cursor: pointer; transition: all 0.2s; }
-        .box-dadu-single:hover:not(.disabled) { transform: scale(1.05); border-color: #2e7d32; }
-        .box-dadu-single.disabled { cursor: not-allowed; opacity: 0.6; }
+        #log-game { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); padding: 10px; height: 180px; overflow-y: auto; font-size: 11px; border-radius: 10px; display: flex; flex-direction: column; gap: 6px; }
+        .log-item { padding-bottom: 4px; border-bottom: 1px dashed rgba(255,255,255,0.1); }
 
-        @keyframes putarDadu {
-            0% { transform: scale(1) rotate(0deg); }
-            50% { transform: scale(1.15) rotate(180deg); }
-            100% { transform: scale(1) rotate(360deg); }
+        .area-dadu-container { display: flex; align-items: center; gap: 12px; background: rgba(0,0,0,0.3); padding: 8px 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); }
+        .box-dadu-single { font-size: 32px; background: #fff; border: 3px solid var(--gold); border-radius: 10px; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 12px rgba(0,0,0,0.4); cursor: pointer; color: #1e293b; transition: transform 0.1s; }
+        .box-dadu-single:hover:not(.disabled) { transform: scale(1.05); }
+        .box-dadu-single.disabled { opacity: 0.4; cursor: not-allowed; filter: grayscale(1); }
+
+        #modal-kartu { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(8px); }
+        .kartu-konten { background: linear-gradient(135deg, #1e293b, #0f172a); padding: 25px; border-radius: 20px; width: 90%; max-width: 380px; text-align: center; box-shadow: 0 25px 50px rgba(0,0,0,0.8); border: 3px solid var(--gold); color: #fff; transform: scale(0.9); animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        @keyframes popIn { to { transform: scale(1); } }
+        .kartu-ikon { font-size: 50px; margin-bottom: 10px; }
+        .kartu-pesan { font-size: 14px; font-weight: 600; margin: 15px 0 20px 0; line-height: 1.5; color: #cbd5e1; }
+
+        @media (max-width: 900px) {
+            #hud-kiri { width: 45vw; left: 10px; top: 10px; }
+            #hud-kanan { width: 45vw; right: 10px; top: 10px; }
+            #hud-bawah { width: 95vw; flex-wrap: wrap; bottom: 10px; padding: 10px; gap: 8px; }
+            .hud-btn { padding: 8px 10px; font-size: 10px; }
         }
-        .mengocok { animation: putarDadu 0.3s ease infinite; }
-
-        .menu-tengah { display: flex; gap: 4px; justify-content: center; width: 100%; flex-wrap: wrap; }
-        .menu-tengah button, .btn-aksi-header { padding: 4px 8px; font-size: clamp(9px, 1.8vw, 11px); font-weight: bold; border-radius: 4px; border: none; cursor: pointer; color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: all 0.2s; }
-        .menu-tengah button:disabled { background: #ccc !important; cursor: not-allowed; box-shadow: none; transform: none; }
-        body.dark-mode .menu-tengah button:disabled { background: #444 !important; color: #888; }
-
-        #log-game { background: var(--stat-bg); border: 1px solid var(--stat-border); padding: 6px 8px; height: 13vh; width: 100%; overflow-y: auto; font-size: clamp(8.5px, 1.6vw, 10.5px); border-radius: 4px; text-align: left; line-height: 1.3; }
-
-        #modal-kartu { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: 10; justify-content: center; align-items: center; border-radius: 8px; }
-        .kartu-konten { background: var(--card-bg); padding: 16px; border-radius: 10px; width: 90%; max-width: 320px; text-align: center; box-shadow: 0 8px 20px rgba(0,0,0,0.4); border: 3px solid var(--border-papan); color: var(--text-color); }
-        .kartu-ikon { font-size: 32px; margin-bottom: 4px; }
-        .kartu-pesan { font-size: clamp(10px, 2vw, 12px); font-weight: 600; margin: 6px 0 12px 0; line-height: 1.4; }
-
-        .pion-container { display: flex; gap: 2px; justify-content: center; align-items: center; flex-wrap: wrap; min-height: 16px; width: 100%; padding-bottom: 2px; }
-        .pion { width: clamp(10px, 2.5vw, 18px); height: clamp(10px, 2.5vw, 18px); border-radius: 50%; display: inline-block; border: 2px solid #ffffff; box-shadow: 0 2px 5px rgba(0,0,0,0.5); transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <div id="papan-permainan">
-            <div class="tengah-papan">
-                
-                <div class="header-tengah">
-                    <h1>MONOPOLI RESMI</h1>
-                    <div style="display: flex; gap: 4px; align-items: center;">
-                        <select id="jumlah-pemain" onchange="inisialisasiGame()">
-                            <option value="bot">🤖 VS Bot (1P)</option>
-                            <option value="2">2 Pemain</option>
-                            <option value="3">3 Pemain</option>
-                            <option value="4" selected>4 Pemain</option>
-                            <option value="5">5 Pemain</option>
-                            <option value="6">6 Pemain</option>
-                        </select>
-                        <button class="btn-aksi-header" onclick="inisialisasiGame()" style="background:#fb8c00;" title="Reset Game">🔄</button>
-                        <button class="btn-aksi-header" onclick="simpanGame()" style="background:#1e88e5;" title="Simpan Game">💾</button>
-                        <button class="btn-aksi-header" onclick="muatGame()" style="background:#43a047;" title="Muat Game">📂</button>
-                        <button class="btn-aksi-header" onclick="toggleDarkMode()" style="background:#8e24aa;" title="Dark Mode">🌙</button>
-                    </div>
-                </div>
+    <div id="webgl-container"></div>
 
-                <div id="daftar-statistik" class="statistik-container"></div>
+    <div id="hud-kiri" class="hud-panel">
+        <div class="header-ui">
+            <h2>STATISTIK PEMAIN</h2>
+            <select id="jumlah-pemain" onchange="inisialisasiGame()">
+                <option value="bot">🤖 VS Bot AI</option>
+                <option value="2">2 Pemain</option>
+                <option value="3">3 Pemain</option>
+                <option value="4" selected>4 Pemain</option>
+            </select>
+        </div>
+        <div id="daftar-statistik" class="statistik-container"></div>
+    </div>
 
-                <div class="area-dadu-container">
-                    <div style="display: flex; gap: 6px;" onclick="mulaiLemparDadu()">
-                        <div id="dadu-1" class="box-dadu-single">🎲</div>
-                        <div id="dadu-2" class="box-dadu-single">🎲</div>
-                    </div>
-                    <div style="text-align: left; font-size: clamp(10px, 2vw, 12px);">
-                        <div id="status-giliran" style="font-weight: bold; color: #2e7d32; font-size: clamp(11px, 2.2vw, 13px);">Giliran: -</div>
-                        <div style="font-size: clamp(9px, 1.8vw, 10.5px); opacity: 0.8;">(Ketuk dadu untuk melempar 2 dadu)</div>
-                    </div>
-                </div>
-
-                <div class="menu-tengah">
-                    <button id="btn-beli" onclick="beliKota()" style="background: #1e88e5;" disabled>🏠 Beli Properti</button>
-                    <button id="btn-upgrade" onclick="upgradeKota()" style="background: #8e24aa;" disabled>🏘️ Beli Rumah/Hotel</button>
-                    <button id="btn-gadaikan" onclick="gadaikanKota()" style="background: #e65100;" disabled>🏦 Gadaikan (Hipotik)</button>
-                    <button id="btn-bayar-penjara" onclick="bayarDendaPenjara()" style="background: #c62828;" disabled>💰 Bayar Denda (50rb)</button>
-                </div>
-
-                <div id="log-game">Selamat datang! Ketuk dadu di tengah untuk mulai bermain.</div>
-
-                <div id="modal-kartu">
-                    <div class="kartu-konten">
-                        <div id="modal-kartu-ikon" class="kartu-ikon">✨</div>
-                        <h3 id="judul-kartu-modal" style="font-size: 13px; margin: 0 0 4px 0; color: #2e7d32;">Kartu Kesempatan / Dana Umum</h3>
-                        <p id="pesan-kartu-modal" class="kartu-pesan">Isi kartu...</p>
-                        <button class="btn-aksi-header" style="background: #2e7d32; padding: 6px 12px;" onclick="tutupModalKartu()">OK / Lanjutkan</button>
-                    </div>
-                </div>
-
+    <div id="hud-kanan" class="hud-panel">
+        <div class="header-ui">
+            <h2>LOG AKTIVITAS</h2>
+            <div style="display:flex; gap:4px;">
+                <button class="btn-aksi-header" onclick="resetSudutKamera()" title="Reset Kamera">🔄 RESET</button>
             </div>
+        </div>
+        <div id="log-game"></div>
+    </div>
+
+    <div id="hud-bawah" class="hud-panel">
+        <div class="area-dadu-container">
+            <div style="display: flex; gap: 8px;" onclick="mulaiLemparDadu()">
+                <div id="dadu-1" class="box-dadu-single">🎲</div>
+                <div id="dadu-2" class="box-dadu-single">🎲</div>
+            </div>
+            <div style="text-align: left;">
+                <div id="status-giliran" style="font-weight: 900; color: var(--gold); font-size: 13px; text-transform: uppercase;">Giliran: -</div>
+                <div style="font-size: 10px; opacity: 0.7;">(Ketuk Dadu)</div>
+            </div>
+        </div>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;">
+            <button id="btn-beli" class="hud-btn" onclick="beliKota()" style="background: #2563eb;" disabled>🏠 Beli</button>
+            <button id="btn-upgrade" class="hud-btn" onclick="upgradeKota()" style="background: #9333ea;" disabled>🏘️ Bangun</button>
+            <button id="btn-selesai" class="hud-btn" onclick="gantiGiliran()" style="background: #16a34a;" disabled>⏭️ Selesai Turn</button>
+        </div>
+    </div>
+
+    <div id="modal-kartu">
+        <div class="kartu-konten">
+            <div id="modal-kartu-ikon" class="kartu-ikon">✨</div>
+            <h3 id="judul-kartu-modal" style="font-size: 18px; font-weight: 900; margin: 0 0 5px 0; color: var(--gold); text-transform: uppercase;">Kartu</h3>
+            <p id="pesan-kartu-modal" class="kartu-pesan">Isi kartu...</p>
+            <button class="hud-btn" style="background: #16a34a; width: 100%; font-size: 14px;" onclick="tutupModalKartu()">LANJUTKAN</button>
         </div>
     </div>
 
     <script>
-        let audioCtx = null;
-
-        // Mengaktifkan & membuka kunci AudioContext browser secara otomatis saat ada interaksi pertama
-        function dapatkanAudioContext() {
-            if (!audioCtx) {
-                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-                if (AudioContextClass) {
-                    audioCtx = new AudioContextClass();
-                }
-            }
-            if (audioCtx && audioCtx.state === 'suspended') {
-                audioCtx.resume();
-            }
-            return audioCtx;
-        }
-
-        // Jalankan listener sekali klik di mana saja pada halaman untuk mengaktifkan audio
-        function unlockAudioGlobal() {
-            dapatkanAudioContext();
-            document.removeEventListener('click', unlockAudioGlobal);
-            document.removeEventListener('touchstart', unlockAudioGlobal);
-        }
-        document.addEventListener('click', unlockAudioGlobal);
-        document.addEventListener('touchstart', unlockAudioGlobal);
-
-        function mainkanSuara(tipe) {
-            try {
-                const ctx = dapatkanAudioContext();
-                if (!ctx || ctx.state !== 'running') return;
-
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                const now = ctx.currentTime;
-
-                if (tipe === 'klik') {
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(450, now);
-                    gain.gain.setValueAtTime(0.12, now);
-                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
-                    osc.start(now);
-                    osc.stop(now + 0.08);
-                } else if (tipe === 'dadu') {
-                    osc.type = 'triangle';
-                    osc.frequency.setValueAtTime(180 + Math.random() * 260, now);
-                    gain.gain.setValueAtTime(0.15, now);
-                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
-                    osc.start(now);
-                    osc.stop(now + 0.05);
-                } else if (tipe === 'langkah') {
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(340, now);
-                    osc.frequency.exponentialRampToValueAtTime(170, now + 0.06);
-                    gain.gain.setValueAtTime(0.12, now);
-                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
-                    osc.start(now);
-                    osc.stop(now + 0.06);
-                } else if (tipe === 'beli') {
-                    osc.type = 'square';
-                    osc.frequency.setValueAtTime(523.25, now);
-                    osc.frequency.setValueAtTime(659.25, now + 0.09);
-                    osc.frequency.setValueAtTime(783.99, now + 0.18);
-                    gain.gain.setValueAtTime(0.12, now);
-                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
-                    osc.start(now);
-                    osc.stop(now + 0.35);
-                } else if (tipe === 'uang_keluar') {
-                    osc.type = 'sawtooth';
-                    osc.frequency.setValueAtTime(360, now);
-                    osc.frequency.linearRampToValueAtTime(180, now + 0.2);
-                    gain.gain.setValueAtTime(0.14, now);
-                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
-                    osc.start(now);
-                    osc.stop(now + 0.2);
-                } else if (tipe === 'penjara') {
-                    osc.type = 'sawtooth';
-                    osc.frequency.setValueAtTime(170, now);
-                    osc.frequency.linearRampToValueAtTime(90, now + 0.35);
-                    gain.gain.setValueAtTime(0.2, now);
-                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
-                    osc.start(now);
-                    osc.stop(now + 0.35);
-                } else if (tipe === 'hoki') {
-                    osc.type = 'triangle';
-                    osc.frequency.setValueAtTime(440, now);
-                    osc.frequency.setValueAtTime(554.37, now + 0.08);
-                    osc.frequency.setValueAtTime(659.25, now + 0.16);
-                    osc.frequency.setValueAtTime(880, now + 0.24);
-                    gain.gain.setValueAtTime(0.15, now);
-                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
-                    osc.start(now);
-                    osc.stop(now + 0.45);
-                } else if (tipe === 'suara_kesempatan') {
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(523.25, now);
-                    osc.frequency.setValueAtTime(659.25, now + 0.1);
-                    osc.frequency.setValueAtTime(783.99, now + 0.2);
-                    osc.frequency.setValueAtTime(1046.50, now + 0.3);
-                    gain.gain.setValueAtTime(0.15, now);
-                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
-                    osc.start(now);
-                    osc.stop(now + 0.5);
-                } else if (tipe === 'suara_dana_umum') {
-                    osc.type = 'triangle';
-                    osc.frequency.setValueAtTime(392.00, now);
-                    osc.frequency.setValueAtTime(493.88, now + 0.1);
-                    osc.frequency.setValueAtTime(587.33, now + 0.2);
-                    osc.frequency.setValueAtTime(783.99, now + 0.3);
-                    gain.gain.setValueAtTime(0.15, now);
-                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
-                    osc.start(now);
-                    osc.stop(now + 0.5);
-                }
-            } catch (e) {}
-        }
-
         const totalPetak = 40;
-        let pemain = [];
-        let giliranIndex = 0;
-        let sudahLempar = false;
-        let sedangBerjalan = false;
-        let hitungDaduKembar = 0;
-        let adaDaduKembar = false;
-        let menungguTutupKartu = false;
-        let gameSelesai = false;
+        let scene, camera, renderer, controls;
+        let boardGroup, players3D = [], dice3D = [], buildingMeshes = {};
+        let isPOVMode = false;
+        
+        let pemain = [], giliranIndex = 0, sudahLempar = false, sedangBerjalan = false, gameSelesai = false;
 
-        const warnaPion = ['#e53935', '#1e88e5', '#43a047', '#fb8c00', '#8e24aa', '#d81b60'];
+        const warnaPionHex = [0xef4444, 0x3b82f6, 0x22c55e, 0xeab308, 0xa855f7, 0xec4899];
+        const warnaPionStr = ['#ef4444', '#3b82f6', '#22c55e', '#eab308', '#a855f7', '#ec4899'];
         const namaWarnaPion = ['Merah', 'Biru', 'Hijau', 'Kuning', 'Ungu', 'Pink'];
 
         const namaNusantara = [
-            "START", "Bandung", "Dana Umum", "Semarang", "Pajak Penghasilan", "Surabaya", "Malang", "Kesempatan", "Bali", "Lombok",
-            "Penjara", "Medan", "Perusahaan Listrik", "Palembang", "Padang", "Pekanbaru", "Batam", "Dana Umum", "Pontianak", "Balikpapan",
-            "Parkir Bebas", "Makassar", "Kesempatan", "Manado", "Palu", "Kendari", "Ambon", "Perusahaan Air", "Sorong", "Jayapura",
-            "Masuk Penjara", "Bogor", "Depok", "Dana Umum", "Tangerang", "Bekasi", "Kesempatan", "Solo", "Pajak Mewah", "Aceh"
+            "START", "Bandung", "Dana Umum", "Semarang", "Pajak Jalan", "Surabaya", "Malang", "Kesempatan", "Bali", "Lombok",
+            "Penjara", "Medan", "PLN", "Palembang", "Padang", "Pekanbaru", "Batam", "Dana Umum", "Pontianak", "Balikpapan",
+            "Parkir", "Makassar", "Kesempatan", "Manado", "Palu", "Kendari", "Ambon", "PDAM", "Sorong", "Jayapura",
+            "Ke Penjara", "Bogor", "Depok", "Dana Umum", "Tangerang", "Bekasi", "Kesempatan", "Solo", "Pajak Mewah", "Aceh"
         ];
 
-        function getSisiBaris(indeksPetak) {
-            if (indeksPetak >= 0 && indeksPetak <= 9) return 1;
-            if (indeksPetak >= 10 && indeksPetak <= 19) return 2;
-            if (indeksPetak >= 20 && indeksPetak <= 29) return 3;
-            return 4;
-        }
-
-        const daftarKesempatan = [
-            { teks: "Maju langsung ke petak START! Ambil gaji Rp 200.000.", aksi: p => { p.posisi = 0; p.uang += 200000; p.totalPutaran++; } },
-            { teks: "Bank membayar dividen saham sebesar Rp 50.000!", aksi: p => p.uang += 50000 },
-            { teks: "Bayar denda tilang lalu lintas sebesar Rp 15.000.", aksi: p => p.uang -= 15000 },
-            { teks: "Maju ke petak Bogor.", aksi: p => { p.posisi = 31; } },
-            { teks: "Langsung Masuk Penjara! Jangan melewati START.", aksi: p => { p.posisi = 10; p.diPenjara = true; } },
-            { teks: "Kartu Bebas Penjara! Disimpan untuk digunakan.", aksi: p => p.kartuBebasPenjara++ }
-        ];
-
-        const daftarDanaUmum = [
-            { teks: "Kesalahan kalkulasi bank, terima kembali Rp 200.000!", aksi: p => p.uang += 200000 },
-            { teks: "Bayar tagihan rumah sakit sebesar Rp 100.000.", aksi: p => p.uang -= 100000 },
-            { teks: "Menerima pengembalian pajak penghasilan Rp 20.000.", aksi: p => p.uang += 20000 },
-            { teks: "Menang kompetisi kontes lokal, dapat Rp 100.000!", aksi: p => p.uang += 100000 },
-            { teks: "Bayar premi asuransi kendaraan Rp 50.000.", aksi: p => p.uang -= 50000 }
+        const warnaKomplekHex = [
+            0x000000, 0x8b4513, 0x000000, 0x8b4513, 0x000000, 0x0284c7, 0x0284c7, 0x000000, 0x0284c7, 0x0284c7,
+            0x000000, 0xdb2777, 0x000000, 0xdb2777, 0xdb2777, 0xd97706, 0xd97706, 0x000000, 0xd97706, 0xd97706,
+            0x000000, 0xdc2626, 0x000000, 0xdc2626, 0xdc2626, 0xca8a04, 0xca8a04, 0x000000, 0xca8a04, 0xca8a04,
+            0x000000, 0x16a34a, 0x16a34a, 0x000000, 0x16a34a, 0x16a34a, 0x000000, 0x1d4ed8, 0x000000, 0x1d4ed8
         ];
 
         const petaData = Array(40).fill(null).map((_, i) => ({
-            id: i,
-            nama: namaNusantara[i],
-            tipe: 'kota',
-            harga: 180000 + (i * 12000),
-            sewaDasar: 15000 + (i * 3500),
-            hargaRumah: 100000 + (getSisiBaris(i) * 50000),
-            pemilik: null,
-            level: 0,
-            isGadai: false
+            id: i, nama: namaNusantara[i], tipe: 'kota',
+            harga: 180000 + (i * 12000), sewaDasar: 15000 + (i * 3500), hargaRumah: 100000 + (Math.floor(i/10) * 50000),
+            pemilik: null, level: 0, isGadai: false, warnaHex: warnaKomplekHex[i]
         }));
 
         [0, 10, 20, 30, 2, 7, 17, 22, 33, 36, 4, 38, 12, 27].forEach(i => {
@@ -328,654 +162,669 @@
             else if ([7, 22, 36].includes(i)) petaData[i].tipe = 'kesempatan';
             else if (i === 4 || i === 38) petaData[i].tipe = 'pajak';
             else petaData[i].tipe = 'fasilitas';
-            
-            petaData[i].harga = 0;
-            petaData[i].sewaDasar = 0;
+            petaData[i].harga = 0; petaData[i].sewaDasar = 0;
         });
 
-        function toggleDarkMode() {
-            mainkanSuara('klik');
-            document.body.classList.toggle('dark-mode');
-            localStorage.setItem('monopoli_dark_mode', document.body.classList.contains('dark-mode'));
-        }
+        function createDiceFaceTexture(number) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 128; canvas.height = 128;
+            const ctx = canvas.getContext('2d');
 
-        function simpanGame() {
-            mainkanSuara('klik');
-            const gameState = {
-                pemain: pemain,
-                giliranIndex: giliranIndex,
-                sudahLempar: sudahLempar,
-                gameSelesai: gameSelesai,
-                petaData: petaData.map(p => ({
-                    id: p.id,
-                    pemilikId: p.pemilik ? p.pemilik.id : null,
-                    level: p.level,
-                    isGadai: p.isGadai
-                }))
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, 128, 128);
+            ctx.strokeStyle = '#e2e8f0';
+            ctx.lineWidth = 8;
+            ctx.strokeRect(0, 0, 128, 128);
+
+            ctx.fillStyle = (number === 1) ? '#dc2626' : '#0f172a';
+            const radius = (number === 1) ? 18 : 12;
+
+            const dots = {
+                1: [[64, 64]],
+                2: [[32, 32], [96, 96]],
+                3: [[32, 32], [64, 64], [96, 96]],
+                4: [[32, 32], [96, 32], [32, 96], [96, 96]],
+                5: [[32, 32], [96, 32], [64, 64], [32, 96], [96, 96]],
+                6: [[32, 32], [96, 32], [32, 64], [96, 64], [32, 96], [96, 96]]
             };
-            localStorage.setItem('monopoli_resmi_save', JSON.stringify(gameState));
-            mainkanSuara('hoki');
-            tulisLog(`💾 <b>Permainan Berhasil Disimpan!</b>`);
-            alert("Permainan berhasil disimpan!");
+
+            dots[number].forEach(pos => {
+                ctx.beginPath();
+                ctx.arc(pos[0], pos[1], radius, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.needsUpdate = true;
+            return texture;
         }
 
-        function muatGame() {
-            mainkanSuara('klik');
-            const saved = localStorage.getItem('monopoli_resmi_save');
-            if (!saved) { alert("Tidak ada data simpanan!"); return; }
-            try {
-                const gameState = JSON.parse(saved);
-                pemain = gameState.pemain;
-                giliranIndex = gameState.giliranIndex;
-                sudahLempar = gameState.sudahLempar;
-                gameSelesai = gameState.gameSelesai;
+        function createTileTextTexture(index, name, type, price, colorHex) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 256; canvas.height = 256;
+            const ctx = canvas.getContext('2d');
 
-                gameState.petaData.forEach(savedPeta => {
-                    const peta = petaData[savedPeta.id];
-                    peta.level = savedPeta.level;
-                    peta.isGadai = savedPeta.isGadai;
-                    peta.pemilik = savedPeta.pemilikId ? pemain.find(p => p.id === savedPeta.pemilikId) : null;
-                });
+            ctx.fillStyle = '#fef08a';
+            if (type === 'sudut') ctx.fillStyle = '#facc15';
+            else if (type === 'kesempatan') ctx.fillStyle = '#fb923c';
+            else if (type === 'dana_umum') ctx.fillStyle = '#38bdf8';
+            ctx.fillRect(0, 0, 256, 256);
 
-                sedangBerjalan = false;
-                menungguTutupKartu = false;
-                document.getElementById('modal-kartu').style.display = 'none';
-
-                perbaruiTampilan();
-                mainkanSuara('hoki');
-                tulisLog(`📂 <b>Data Permainan Dimuat Kembali!</b>`);
-                alert("Permainan berhasil dimuat!");
-            } catch (e) {
-                alert("Gagal memuat simpanan!");
+            if (type === 'kota') {
+                ctx.fillStyle = '#' + colorHex.toString(16).padStart(6, '0');
+                ctx.fillRect(0, 0, 256, 75);
+                ctx.strokeStyle = '#0f172a';
+                ctx.lineWidth = 6;
+                ctx.strokeRect(0, 0, 256, 75);
             }
+
+            ctx.strokeStyle = '#334155';
+            ctx.lineWidth = 10;
+            ctx.strokeRect(0, 0, 256, 256);
+
+            ctx.fillStyle = '#0f172a';
+            ctx.font = '900 24px Arial';
+            ctx.textAlign = 'right';
+            ctx.fillText('#' + index, 240, 105);
+
+            ctx.textAlign = 'center';
+            ctx.font = '900 28px Arial';
+            ctx.fillStyle = '#ffffff';
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = 6;
+
+            const words = name.split(' ');
+            let yPos = type === 'kota' ? 145 : 130;
+
+            if (words.length > 1 && name.length > 9) {
+                ctx.strokeText(words[0], 128, yPos - 12);
+                ctx.fillText(words[0], 128, yPos - 12);
+                ctx.strokeText(words.slice(1).join(' '), 128, yPos + 22);
+                ctx.fillText(words.slice(1).join(' '), 128, yPos + 22);
+            } else {
+                ctx.strokeText(name, 128, yPos);
+                ctx.fillText(name, 128, yPos);
+            }
+
+            if (price > 0) {
+                ctx.fillStyle = '#0f172a';
+                ctx.fillRect(35, 200, 186, 38);
+                ctx.fillStyle = '#f6c84c';
+                ctx.font = 'bold 20px Arial';
+                ctx.fillText('Rp ' + (price / 1000) + 'k', 128, 226);
+            }
+
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.needsUpdate = true;
+            return texture;
         }
 
-        function buatPapanGrid() {
-            const papan = document.getElementById('papan-permainan');
-            const petakLama = papan.querySelectorAll('.petak');
-            petakLama.forEach(p => p.remove());
+        function init3DScene() {
+            const container = document.getElementById('webgl-container');
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x0a0f24);
+            scene.fog = new THREE.FogExp2(0x0a0f24, 0.01);
+
+            camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 22, 26);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            container.appendChild(renderer.domElement);
+
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.maxPolarAngle = Math.PI / 2.1;
+            controls.minDistance = 10;
+            controls.maxDistance = 50;
+            controls.target.set(0, 0, 0);
+
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.85);
+            scene.add(ambientLight);
+
+            const dirLight = new THREE.DirectionalLight(0xfffaed, 1.2);
+            dirLight.position.set(20, 40, 20);
+            dirLight.castShadow = true;
+            dirLight.shadow.mapSize.width = 2048;
+            dirLight.shadow.mapSize.height = 2048;
+            scene.add(dirLight);
+
+            buatPapan3D();
+            buatDadu3D();
+
+            window.addEventListener('resize', onWindowResize);
+            animate();
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function resetSudutKamera() {
+            isPOVMode = false;
+            controls.enabled = true;
+            new TWEEN.Tween(camera.position)
+                .to({ x: 0, y: 22, z: 26 }, 800)
+                .easing(TWEEN.Easing.Cubic.Out)
+                .start();
+            new TWEEN.Tween(controls.target)
+                .to({ x: 0, y: 0, z: 0 }, 800)
+                .easing(TWEEN.Easing.Cubic.Out)
+                .start();
+        }
+
+        function setPOVFollowCamera(targetPos3D) {
+            isPOVMode = true;
+            controls.enabled = false;
+            const camTargetX = targetPos3D.x * 1.2;
+            const camTargetZ = targetPos3D.z * 1.2 + 6;
+            
+            new TWEEN.Tween(camera.position)
+                .to({ x: camTargetX, y: 7, z: camTargetZ }, 400)
+                .easing(TWEEN.Easing.Quadratic.Out)
+                .start();
+
+            new TWEEN.Tween(controls.target)
+                .to({ x: targetPos3D.x, y: targetPos3D.y + 0.5, z: targetPos3D.z }, 400)
+                .easing(TWEEN.Easing.Quadratic.Out)
+                .start();
+        }
+
+        function resetPOVToOverviewCamera() {
+            isPOVMode = false;
+            controls.enabled = true;
+            new TWEEN.Tween(camera.position)
+                .to({ x: 0, y: 22, z: 26 }, 800)
+                .easing(TWEEN.Easing.Cubic.Out)
+                .start();
+            new TWEEN.Tween(controls.target)
+                .to({ x: 0, y: 0, z: 0 }, 800)
+                .easing(TWEEN.Easing.Cubic.Out)
+                .start();
+        }
+
+        function getTilePosition3D(index) {
+            const boardSize = 18;
+            const tileSize = boardSize / 11;
+            const halfBoard = boardSize / 2;
+            let x = 0, z = 0;
+
+            if (index <= 10) {
+                x = halfBoard - (index * tileSize) - (tileSize/2);
+                z = halfBoard - (tileSize/2);
+            } else if (index <= 20) {
+                x = -halfBoard + (tileSize/2);
+                z = halfBoard - ((index - 10) * tileSize) - (tileSize/2);
+            } else if (index <= 30) {
+                x = -halfBoard + ((index - 20) * tileSize) + (tileSize/2);
+                z = -halfBoard + (tileSize/2);
+            } else {
+                x = halfBoard - (tileSize/2);
+                z = -halfBoard + ((index - 30) * tileSize) + (tileSize/2);
+            }
+            return { x, y: 0.6, z };
+        }
+
+        function buatPapan3D() {
+            boardGroup = new THREE.Group();
+            scene.add(boardGroup);
+
+            const baseGeo = new THREE.BoxGeometry(19, 1, 19);
+            const baseMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.3 });
+            const baseMesh = new THREE.Mesh(baseGeo, baseMat);
+            baseMesh.position.y = -0.5;
+            baseMesh.receiveShadow = true;
+            boardGroup.add(baseMesh);
+
+            const borderGeo = new THREE.BoxGeometry(19.4, 0.8, 19.4);
+            const borderMat = new THREE.MeshStandardMaterial({ color: 0xf6c84c, metalness: 0.8, roughness: 0.2 });
+            const borderMesh = new THREE.Mesh(borderGeo, borderMat);
+            borderMesh.position.y = -0.6;
+            boardGroup.add(borderMesh);
+
+            const centerGeo = new THREE.PlaneGeometry(14.6, 14.6);
+            const centerCanvas = document.createElement('canvas');
+            centerCanvas.width = 512; centerCanvas.height = 512;
+            const cctx = centerCanvas.getContext('2d');
+            cctx.fillStyle = '#0f172a';
+            cctx.fillRect(0, 0, 512, 512);
+            
+            cctx.fillStyle = '#f6c84c';
+            cctx.font = 'bold 44px Arial';
+            cctx.textAlign = 'center';
+            cctx.fillText('MONOPOLI 3D', 256, 230);
+            cctx.fillStyle = '#38bdf8';
+            cctx.font = 'bold 28px Arial';
+            cctx.fillText('JELAJAH NUSANTARA', 256, 280);
+
+            const centerTexture = new THREE.CanvasTexture(centerCanvas);
+            const centerMat = new THREE.MeshStandardMaterial({ map: centerTexture, roughness: 0.5 });
+            const centerMesh = new THREE.Mesh(centerGeo, centerMat);
+            centerMesh.rotation.x = -Math.PI / 2;
+            centerMesh.position.y = 0.05;
+            boardGroup.add(centerMesh);
 
             for (let i = 0; i < totalPetak; i++) {
-                let r, c;
-                if (i <= 10) { r = 11; c = 11 - i; }
-                else if (i <= 20) { r = 11 - (i - 10); c = 1; }
-                else if (i <= 30) { r = 1; c = 1 + (i - 20); }
-                else { r = 1 + (i - 30); c = 11; }
+                const pos = getTilePosition3D(i);
+                const pData = petaData[i];
 
-                const div = document.createElement('div');
-                div.className = 'petak';
-                if (petaData[i].tipe === 'sudut') div.classList.add('sudut');
-                if (petaData[i].tipe === 'kesempatan') div.classList.add('kesempatan');
-                if (petaData[i].tipe === 'dana_umum') div.classList.add('kesialan');
-
-                div.style.gridRow = r; div.style.gridColumn = c;
-                div.id = `petak-${i}`;
+                const tileGeo = new THREE.BoxGeometry(1.55, 0.2, 1.55);
+                const tileTexture = createTileTextTexture(i, pData.nama, pData.tipe, pData.harga, pData.warnaHex);
                 
-                div.innerHTML = `
-                    <span class="nomor-petak">${i}</span>
-                    <span class="nama-petak">${petaData[i].nama}</span>
-                    <div id="pemilik-${i}"></div>
-                    <div class="pion-container" id="pion-petak-${i}"></div>
-                `;
-                papan.appendChild(div);
+                const tileMaterials = [
+                    new THREE.MeshStandardMaterial({ color: 0x334155 }),
+                    new THREE.MeshStandardMaterial({ color: 0x334155 }),
+                    new THREE.MeshStandardMaterial({ map: tileTexture, roughness: 0.2 }),
+                    new THREE.MeshStandardMaterial({ color: 0x334155 }),
+                    new THREE.MeshStandardMaterial({ color: 0x334155 }),
+                    new THREE.MeshStandardMaterial({ color: 0x334155 })
+                ];
+
+                const tileMesh = new THREE.Mesh(tileGeo, tileMaterials);
+                tileMesh.position.set(pos.x, 0.1, pos.z);
+                
+                if (i > 0 && i < 10) tileMesh.rotation.y = 0;
+                else if (i >= 10 && i < 20) tileMesh.rotation.y = Math.PI / 2;
+                else if (i >= 20 && i < 30) tileMesh.rotation.y = Math.PI;
+                else if (i >= 30) tileMesh.rotation.y = -Math.PI / 2;
+
+                tileMesh.receiveShadow = true;
+                boardGroup.add(tileMesh);
             }
+        }
+
+        function buatKarakterChibi3D(colorHex) {
+            const group = new THREE.Group();
+
+            const bodyGeo = new THREE.CylinderGeometry(0.25, 0.35, 0.7, 16);
+            const bodyMat = new THREE.MeshStandardMaterial({ color: colorHex, roughness: 0.3 });
+            const body = new THREE.Mesh(bodyGeo, bodyMat);
+            body.position.y = 0.35;
+            body.castShadow = true;
+            group.add(body);
+
+            const headGeo = new THREE.SphereGeometry(0.45, 32, 32);
+            const headMat = new THREE.MeshStandardMaterial({ color: 0xffdbac, roughness: 0.5 });
+            const head = new THREE.Mesh(headGeo, headMat);
+            head.position.y = 0.95;
+            head.castShadow = true;
+            group.add(head);
+
+            const eyeGeo = new THREE.SphereGeometry(0.08, 16, 16);
+            const eyeMat = new THREE.MeshBasicMaterial({ color: 0x0f172a });
+            const leftEye = new THREE.Mesh(eyeGeo, eyeMat);
+            leftEye.position.set(-0.15, 1.0, 0.38);
+            const rightEye = new THREE.Mesh(eyeGeo, eyeMat);
+            rightEye.position.set(0.15, 1.0, 0.38);
+            group.add(leftEye);
+            group.add(rightEye);
+
+            const crownGeo = new THREE.ConeGeometry(0.25, 0.3, 6);
+            const crownMat = new THREE.MeshStandardMaterial({ color: 0xf6c84c, metalness: 0.8 });
+            const crown = new THREE.Mesh(crownGeo, crownMat);
+            crown.position.y = 1.45;
+            group.add(crown);
+
+            group.scale.set(0.75, 0.75, 0.75);
+            return group;
+        }
+
+        function buatDadu3D() {
+            const diceMaterials = [
+                new THREE.MeshStandardMaterial({ map: createDiceFaceTexture(1), roughness: 0.2 }),
+                new THREE.MeshStandardMaterial({ map: createDiceFaceTexture(6), roughness: 0.2 }),
+                new THREE.MeshStandardMaterial({ map: createDiceFaceTexture(2), roughness: 0.2 }),
+                new THREE.MeshStandardMaterial({ map: createDiceFaceTexture(5), roughness: 0.2 }),
+                new THREE.MeshStandardMaterial({ map: createDiceFaceTexture(3), roughness: 0.2 }),
+                new THREE.MeshStandardMaterial({ map: createDiceFaceTexture(4), roughness: 0.2 })
+            ];
+
+            for (let i = 0; i < 2; i++) {
+                const geo = new THREE.BoxGeometry(1.2, 1.2, 1.2);
+                const dice = new THREE.Mesh(geo, diceMaterials);
+                dice.castShadow = true;
+                dice.position.set((i === 0 ? -1.8 : 1.8), 8, 0);
+                dice.visible = false;
+                scene.add(dice);
+                dice3D.push(dice);
+            }
+        }
+
+        function setDiceRotationToNumber(diceMesh, number) {
+            const rotations = {
+                1: { x: 0, z: -Math.PI / 2 },
+                2: { x: 0, z: 0 },
+                3: { x: -Math.PI / 2, z: 0 },
+                4: { x: Math.PI / 2, z: 0 },
+                5: { x: Math.PI, z: 0 },
+                6: { x: 0, z: Math.PI / 2 }
+            };
+            const rot = rotations[number];
+            diceMesh.rotation.set(rot.x, 0, rot.z);
+        }
+
+        // --- RENDER TANDA KEPEMILIKAN 3D & BANGUNAN ---
+        function renderBangunan3D(petakIndex, level, warnaPemilikHex) {
+            const key = `b_${petakIndex}`;
+            if (buildingMeshes[key]) scene.remove(buildingMeshes[key]);
+
+            const group = new THREE.Group();
+            const pos = getTilePosition3D(petakIndex);
+            group.position.set(pos.x, 0.2, pos.z);
+
+            // Ring Glow Kepemilikan 3D
+            const ringGeo = new THREE.RingGeometry(0.65, 0.75, 32);
+            const ringMat = new THREE.MeshBasicMaterial({ color: warnaPemilikHex, side: THREE.DoubleSide });
+            const ringMesh = new THREE.Mesh(ringGeo, ringMat);
+            ringMesh.rotation.x = Math.PI / 2;
+            ringMesh.position.y = 0.02;
+            group.add(ringMesh);
+
+            // Bendera Kepemilikan (Ownership Flag)
+            const flagPoleGeo = new THREE.CylinderGeometry(0.02, 0.02, 0.7);
+            const flagPoleMat = new THREE.MeshStandardMaterial({ color: 0xffffff });
+            const flagPole = new THREE.Mesh(flagPoleGeo, flagPoleMat);
+            flagPole.position.set(0.45, 0.35, 0.45);
+            group.add(flagPole);
+
+            const bannerGeo = new THREE.BoxGeometry(0.28, 0.18, 0.04);
+            const bannerMat = new THREE.MeshStandardMaterial({ color: warnaPemilikHex });
+            const banner = new THREE.Mesh(bannerGeo, bannerMat);
+            banner.position.set(0.56, 0.6, 0.45);
+            group.add(banner);
+
+            // Model Bangunan (Rumah / Hotel)
+            if (level <= 4 && level > 0) {
+                for (let i = 0; i < level; i++) {
+                    const houseGeo = new THREE.BoxGeometry(0.3, 0.3, 0.3);
+                    const houseMat = new THREE.MeshStandardMaterial({ color: 0x22c55e });
+                    const house = new THREE.Mesh(houseGeo, houseMat);
+                    house.castShadow = true;
+                    house.position.set(-0.3 + (i * 0.2), 0.15, 0);
+                    group.add(house);
+                }
+            } else if (level === 5) {
+                const hotelGeo = new THREE.CylinderGeometry(0.28, 0.4, 0.85, 8);
+                const hotelMat = new THREE.MeshStandardMaterial({ color: 0xef4444, metalness: 0.5 });
+                const hotel = new THREE.Mesh(hotelGeo, hotelMat);
+                hotel.castShadow = true;
+                hotel.position.y = 0.42;
+                group.add(hotel);
+            }
+
+            scene.add(group);
+            buildingMeshes[key] = group;
         }
 
         function inisialisasiGame() {
-            mainkanSuara('klik');
             const val = document.getElementById('jumlah-pemain').value;
-            pemain = [];
-            gameSelesai = false;
             
-            if (val === 'bot') {
-                pemain.push(
-                    { id: 1, nama: "Pemain (Merah)", warna: warnaPion[0], uang: 2500000, posisi: 0, totalPutaran: 0, diPenjara: false, kartuBebasPenjara: 0, isBot: false, isBangkrut: false },
-                    { id: 2, nama: "Bot AI (Biru)", warna: warnaPion[1], uang: 2500000, posisi: 0, totalPutaran: 0, diPenjara: false, kartuBebasPenjara: 0, isBot: true, isBangkrut: false }
-                );
-            } else {
-                const jml = parseInt(val);
-                for (let i = 0; i < jml; i++) {
-                    pemain.push({
-                        id: i + 1,
-                        nama: `Pemain ${i + 1} (${namaWarnaPion[i]})`,
-                        warna: warnaPion[i],
-                        uang: 2500000,
-                        posisi: 0,
-                        totalPutaran: 0,
-                        diPenjara: false,
-                        kartuBebasPenjara: 0,
-                        isBot: false,
-                        isBangkrut: false
-                    });
-                }
+            players3D.forEach(p => scene.remove(p));
+            players3D = [];
+            Object.keys(buildingMeshes).forEach(k => { scene.remove(buildingMeshes[k]); });
+            buildingMeshes = {};
+
+            pemain = []; gameSelesai = false;
+            
+            const num = val === 'bot' ? 2 : parseInt(val);
+            for (let i = 0; i < num; i++) {
+                const isBot = (val === 'bot' && i === 1);
+                pemain.push({
+                    id: i + 1,
+                    nama: isBot ? "Bot AI" : namaWarnaPion[i],
+                    warna: warnaPionStr[i],
+                    warnaHex: warnaPionHex[i],
+                    uang: 2500000, posisi: 0, totalPutaran: 0, diPenjara: false, isBot: isBot, isBangkrut: false
+                });
+
+                const p3d = buatKarakterChibi3D(warnaPionHex[i]);
+                const pos = getTilePosition3D(0);
+                p3d.position.set(pos.x + (i * 0.25 - 0.3), pos.y, pos.z + (i * 0.25 - 0.3));
+                scene.add(p3d);
+                players3D.push(p3d);
             }
 
             petaData.forEach(p => { p.pemilik = null; p.level = 0; p.isGadai = false; });
-
-            giliranIndex = 0;
-            sudahLempar = false;
-            sedangBerjalan = false;
-            hitungDaduKembar = 0;
-            menungguTutupKartu = false;
-            document.getElementById('dadu-1').innerText = '🎲';
-            document.getElementById('dadu-2').innerText = '🎲';
-            document.getElementById('modal-kartu').style.display = 'none';
-            buatPapanGrid();
+            giliranIndex = 0; sudahLempar = false; sedangBerjalan = false;
+            document.getElementById('log-game').innerHTML = '';
+            tulisLog(`🎮 Game Monopoli 3D dimulai! (Bangun kota terbuka setelah 1 putaran)`);
             perbaruiTampilan();
-            tulisLog(`Game dimulai! Modal awal Rp 2.500.000. Giliran: ${pemain[0].nama}`);
-        }
 
-        function cekKomplekSatuWarna(pemainObj, indeksPetak) {
-            let barisTarget = getSisiBaris(indeksPetak);
-            let tanahDiBaris = petaData.filter(p => p.tipe === 'kota' && getSisiBaris(p.id) === barisTarget);
-            return tanahDiBaris.every(p => p.pemilik !== null && p.pemilik.id === pemainObj.id);
-        }
-
-        function cekKondisiBangkrut(p) {
-            if (p.uang < 0 && !p.isBangkrut) {
-                p.isBangkrut = true;
-                p.uang = 0;
-                mainkanSuara('penjara');
-                tulisLog(`💥 <b>BANGKRUT!</b> ${p.nama} kehabisan dana dan dinyatakan gugur!`);
-
-                petaData.forEach(item => {
-                    if (item.pemilik !== null && item.pemilik.id === p.id) {
-                        item.pemilik = null; item.level = 0; item.isGadai = false;
-                    }
-                });
-                perbaruiTampilan();
-                return true;
+            if (pemain[giliranIndex].isBot) {
+                setTimeout(eksekusiLemparDadu, 1000);
             }
-            return false;
         }
 
-        function cekKondisiKemenanganGame() {
-            if (gameSelesai) return true;
-            let pemainAktif = pemain.filter(p => !p.isBangkrut);
-
-            if (pemainAktif.length === 1 && pemain.length > 1) {
-                gameSelesai = true;
-                let pemenang = pemainAktif[0];
-                mainkanSuara('hoki');
-                alert(`🏆 GAME SELESAI!\n\n${pemenang.nama} menjadi pemain terakhir yang bertahan dan MENANG TOTAL!`);
-                tulisLog(`🏆 <b>PEMENANG GAME:</b> ${pemenang.nama} keluar sebagai pemenang tunggal!`);
-                perbaruiTampilan();
-                return true;
-            }
-            return false;
-        }
-
-        function perbaruiTampilan() {
-            for (let i = 0; i < totalPetak; i++) {
-                document.getElementById(`pion-petak-${i}`).innerHTML = '';
-                const divPemilik = document.getElementById(`pemilik-${i}`);
-                const peta = petaData[i];
-                if (peta.pemilik !== null) {
-                    let badgeText = "Tanah";
-                    if (peta.isGadai) badgeText = "🏦 Hipotik";
-                    else if (peta.level >= 1 && peta.level <= 4) badgeText = `${peta.level} 🏡`;
-                    else if (peta.level === 5) badgeText = "🏨 HOTEL";
-
-                    divPemilik.innerHTML = `<span class="info-pemilik" style="background-color: ${peta.pemilik.warna}">${badgeText}</span>`;
-                } else {
-                    divPemilik.innerHTML = '';
-                }
-            }
-
-            pemain.forEach(p => {
-                if (!p.isBangkrut) {
-                    const containerPion = document.getElementById(`pion-petak-${p.posisi}`);
-                    if (containerPion) {
-                        const spanPion = document.createElement('span');
-                        spanPion.className = 'pion';
-                        spanPion.style.backgroundColor = p.warna;
-                        spanPion.title = p.nama;
-                        containerPion.appendChild(spanPion);
-                    }
-                }
-            });
-
-            const daftarStatistikDiv = document.getElementById('daftar-statistik');
-            daftarStatistikDiv.innerHTML = '';
-
-            pemain.forEach((p, index) => {
-                const isAktif = (index === giliranIndex && !gameSelesai);
-                const itemDiv = document.createElement('div');
-                itemDiv.className = `item-statistik ${isAktif ? 'aktif' : ''} ${p.isBangkrut ? 'bangkrut' : ''}`;
-                
-                let statusInfo = `${p.posisi} (${petaData[p.posisi].nama})`;
-                if (p.diPenjara) statusInfo += " 🔒 [PENJARA]";
-                if (p.isBangkrut) statusInfo = "❌ [BANGKRUT]";
-
-                itemDiv.innerHTML = `
-                    <span>${isAktif ? '👉 <b>' : ''}<span style="color:${p.warna}">■</span> ${p.nama}${isAktif ? '</b>' : ''}</span>
-                    <span>Rp ${p.uang.toLocaleString('id-ID')} | Pos: ${statusInfo}</span>
-                `;
-                daftarStatistikDiv.appendChild(itemDiv);
-            });
-
-            const pAktif = pemain[giliranIndex];
-            document.getElementById('status-giliran').innerText = gameSelesai ? "🏁 PERMAINAN SELESAI" : `Giliran: ${pAktif.nama}`;
-
-            const btnDadu1 = document.getElementById('dadu-1');
-            const btnDadu2 = document.getElementById('dadu-2');
+        function gerakkanKarakter3D(playerIndex, targetPos, callback) {
+            const p3d = players3D[playerIndex];
+            const startPos = petaData[pemain[playerIndex].posisi].id;
+            let current = startPos;
             
-            if (gameSelesai || (sudahLempar && !adaDaduKembar) || sedangBerjalan || menungguTutupKartu || pAktif.isBot || pAktif.isBangkrut) {
-                btnDadu1.classList.add('disabled'); btnDadu2.classList.add('disabled');
-            } else {
-                btnDadu1.classList.remove('disabled'); btnDadu2.classList.remove('disabled');
-            }
-
-            const petaAktif = petaData[pAktif.posisi];
-            const btnBeli = document.getElementById('btn-beli');
-            const btnUpgrade = document.getElementById('btn-upgrade');
-            const btnGadaikan = document.getElementById('btn-gadaikan');
-            const btnBayarPenjara = document.getElementById('btn-bayar-penjara');
-
-            if (gameSelesai || pAktif.isBangkrut) {
-                btnBeli.disabled = true; btnUpgrade.disabled = true; btnGadaikan.disabled = true; btnBayarPenjara.disabled = true;
-                return;
-            }
-
-            btnBayarPenjara.disabled = !(pAktif.diPenjara && !sedangBerjalan && !sudahLempar && pAktif.uang >= 50000);
-
-            if (sudahLempar && !sedangBerjalan && !pAktif.diPenjara && !menungguTutupKartu && !pAktif.isBot) {
-                if (petaAktif.harga > 0 && petaAktif.pemilik === null) {
-                    btnBeli.disabled = (pAktif.uang < petaAktif.harga);
-                    btnBeli.innerText = `🏠 Beli (${Math.round(petaAktif.harga / 1000)}rb)`;
-                    btnUpgrade.disabled = true; btnGadaikan.disabled = true;
-                } else if (petaAktif.harga > 0 && petaAktif.pemilik !== null && petaAktif.pemilik.id === pAktif.id) {
-                    btnBeli.disabled = true;
-                    let satuKomplek = cekKomplekSatuWarna(pAktif, pAktif.posisi);
-                    if (satuKomplek && petaAktif.level < 5) {
-                        btnUpgrade.disabled = (pAktif.uang < petaAktif.hargaRumah);
-                        btnUpgrade.innerText = petaAktif.level === 4 ? `🏨 Beli Hotel (${Math.round(petaAktif.hargaRumah / 1000)}rb)` : `🏘️ Beli Rumah (${Math.round(petaAktif.hargaRumah / 1000)}rb)`;
-                    } else {
-                        btnUpgrade.disabled = true;
-                    }
-                    btnGadaikan.disabled = false;
-                    btnGadaikan.innerText = petaAktif.isGadai ? `🏦 Tebus Hipotik (${Math.round((petaAktif.harga * 0.55) / 1000)}rb)` : `🏦 Gadaikan (${Math.round((petaAktif.harga * 0.5) / 1000)}rb)`;
-                } else {
-                    btnBeli.disabled = true; btnUpgrade.disabled = true; btnGadaikan.disabled = true;
+            function step() {
+                if (current === targetPos) {
+                    setTimeout(() => {
+                        resetPOVToOverviewCamera();
+                        if (callback) callback();
+                    }, 400);
+                    return;
                 }
-            } else {
-                btnBeli.disabled = true; btnUpgrade.disabled = true; btnGadaikan.disabled = true;
+                current = (current + 1) % totalPetak;
+                const nextCoords = getTilePosition3D(current);
+
+                setPOVFollowCamera(nextCoords);
+
+                new TWEEN.Tween(p3d.position)
+                    .to({ x: nextCoords.x, z: nextCoords.z }, 320)
+                    .easing(TWEEN.Easing.Quadratic.Out)
+                    .start();
+
+                new TWEEN.Tween(p3d.position)
+                    .to({ y: [nextCoords.y + 1.2, nextCoords.y] }, 320)
+                    .easing(TWEEN.Easing.Quadratic.Out)
+                    .onComplete(() => {
+                        pemain[playerIndex].posisi = current;
+                        if (current === 0) {
+                            pemain[playerIndex].totalPutaran++;
+                            pemain[playerIndex].uang += 200000;
+                            tulisLog(`🎉 ${pemain[playerIndex].nama} melewati START (Putaran ke-${pemain[playerIndex].totalPutaran}, +200k)`);
+                            perbaruiTampilan();
+                        }
+                        step();
+                    })
+                    .start();
             }
+            step();
         }
 
         function mulaiLemparDadu() {
-            if (gameSelesai || (sudahLempar && !adaDaduKembar) || sedangBerjalan || menungguTutupKartu) return;
-            const pAktif = pemain[giliranIndex];
-            if (pAktif.isBot || pAktif.isBangkrut) return;
-
+            if (gameSelesai || sudahLempar || sedangBerjalan) return;
+            const p = pemain[giliranIndex];
+            if (p.isBot || p.isBangkrut) return;
             eksekusiLemparDadu();
         }
 
-        function bayarDendaPenjara() {
-            mainkanSuara('klik');
-            const pAktif = pemain[giliranIndex];
-            if (!pAktif.diPenjara || pAktif.uang < 50000) return;
-
-            pAktif.uang -= 50000;
-            pAktif.diPenjara = false;
-            sudahLempar = false;
-            mainkanSuara('beli');
-            tulisLog(`💰 ${pAktif.nama} membayar denda Rp 50.000 dan bebas dari Penjara! Silakan melempar dadu.`);
-            perbaruiTampilan();
-        }
-
         function eksekusiLemparDadu() {
-            if (sedangBerjalan || gameSelesai) return;
             sedangBerjalan = true;
-            const d1 = document.getElementById('dadu-1');
-            const d2 = document.getElementById('dadu-2');
-            d1.classList.add('mengocok'); d2.classList.add('mengocok');
+            const h1 = Math.floor(Math.random() * 6) + 1;
+            const h2 = Math.floor(Math.random() * 6) + 1;
+            const total = h1 + h2;
 
-            let hitung = 0;
-            const intervalDadu = setInterval(() => {
-                d1.innerText = getSimbolDadu(Math.floor(Math.random() * 6) + 1);
-                d2.innerText = getSimbolDadu(Math.floor(Math.random() * 6) + 1);
-                mainkanSuara('dadu');
-                hitung++;
+            document.getElementById('dadu-1').innerText = h1;
+            document.getElementById('dadu-2').innerText = h2;
 
-                if (hitung > 10) {
-                    clearInterval(intervalDadu);
-                    d1.classList.remove('mengocok'); d2.classList.remove('mengocok');
-                    
-                    const hasil1 = Math.floor(Math.random() * 6) + 1;
-                    const hasil2 = Math.floor(Math.random() * 6) + 1;
-                    d1.innerText = getSimbolDadu(hasil1);
-                    d2.innerText = getSimbolDadu(hasil2);
+            dice3D.forEach((d, index) => {
+                const targetVal = index === 0 ? h1 : h2;
+                d.visible = true;
+                d.position.y = 8;
+                
+                new TWEEN.Tween(d.rotation)
+                    .to({ x: Math.PI * 6, y: Math.PI * 6 }, 500)
+                    .start();
 
-                    const totalLangkah = hasil1 + hasil2;
-                    adaDaduKembar = (hasil1 === hasil2);
-                    const pAktif = pemain[giliranIndex];
+                new TWEEN.Tween(d.position)
+                    .to({ y: 0.8 }, 600)
+                    .easing(TWEEN.Easing.Bounce.Out)
+                    .onComplete(() => {
+                        setDiceRotationToNumber(d, targetVal);
+                        setTimeout(() => { d.visible = false; }, 900);
+                    })
+                    .start();
+            });
 
-                    if (adaDaduKembar) {
-                        hitungDaduKembar++;
-                        mainkanSuara('hoki');
-                        tulisLog(`🎲 <b>Dadu Kembar (${hasil1}-${hasil2})!</b>`);
-                    } else {
-                        hitungDaduKembar = 0;
-                    }
-
-                    if (hitungDaduKembar === 3) {
-                        mainkanSuara('penjara');
-                        tulisLog(`🚨 ${pAktif.nama} melempar dadu kembar 3 kali berturut-turut! Langsung Masuk Penjara.`);
-                        pAktif.posisi = 10;
-                        pAktif.diPenjara = true;
-                        hitungDaduKembar = 0;
-                        adaDaduKembar = false;
-                        sedangBerjalan = false;
-                        perbaruiTampilan();
-                        setTimeout(() => { gantiGiliranBerikutnya(); }, 1200);
-                        return;
-                    }
-
-                    if (pAktif.diPenjara) {
-                        sedangBerjalan = false;
-                        if (adaDaduKembar) {
-                            pAktif.diPenjara = false;
-                            mainkanSuara('hoki');
-                            tulisLog(`🎉 ${pAktif.nama} mendapat dadu kembar dan bebas dari Penjara!`);
-                            gerakkanPionSecaraBertahap(totalLangkah);
-                        } else {
-                            sudahLempar = true;
-                            mainkanSuara('penjara');
-                            tulisLog(`🔒 ${pAktif.nama} gagal mendapat dadu kembar, tetap di Penjara.`);
-                            perbaruiTampilan();
-                            setTimeout(() => { gantiGiliranBerikutnya(); }, 1200);
-                        }
-                    } else {
-                        gerakkanPionSecaraBertahap(totalLangkah);
-                    }
-                }
-            }, 80);
-        }
-
-        function getSimbolDadu(angka) {
-            const simbol = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
-            return simbol[angka - 1];
-        }
-
-        function gerakkanPionSecaraBertahap(langkah) {
-            const pAktif = pemain[giliranIndex];
-            let langkahTersisa = langkah;
-
-            tulisLog(`🎲 ${pAktif.nama} melempar total <b>${langkah}</b> langkah.`);
-
-            const intervalGerak = setInterval(() => {
-                if (langkahTersisa > 0) {
-                    pAktif.posisi = (pAktif.posisi + 1) % totalPetak;
-                    mainkanSuara('langkah');
-
-                    if (pAktif.posisi === 0) {
-                        pAktif.uang += 200000;
-                        pAktif.totalPutaran++;
-                        mainkanSuara('hoki');
-                        tulisLog(`🎉 ${pAktif.nama} melewati START & mendapat gaji bank Rp 200.000!`);
-                    }
-
-                    perbaruiTampilan();
-                    langkahTersisa--;
-                } else {
-                    clearInterval(intervalGerak);
+            setTimeout(() => {
+                const p = pemain[giliranIndex];
+                tulisLog(`🎲 ${p.nama} melempar dadu: ${h1} + ${h2} = ${total}`);
+                
+                const nextPos = (p.posisi + total) % totalPetak;
+                gerakkanKarakter3D(giliranIndex, nextPos, () => {
                     sedangBerjalan = false;
                     sudahLempar = true;
-                    
-                    tulisLog(`📍 ${pAktif.nama} tiba di <b>${petaData[pAktif.posisi].nama}</b>.`);
-                    prosesPetak(pAktif);
-                }
-            }, 300);
+                    prosesPetak(p);
+                });
+            }, 700);
         }
 
         function prosesPetak(p) {
-            const peta = petaData[p.posisi];
+            const pt = petaData[p.posisi];
+            if (pt.tipe === 'pajak') {
+                p.uang -= 150000;
+                tulisLog(`💸 ${p.nama} bayar pajak Rp 150k`);
+            } else if (pt.pemilik && pt.pemilik.id !== p.id && !pt.isGadai) {
+                const sewa = pt.sewaDasar * (pt.level + 1);
+                p.uang -= sewa;
+                pt.pemilik.uang += sewa;
+                tulisLog(`💸 ${p.nama} bayar sewa Rp ${sewa/1000}k ke ${pt.pemilik.nama}`);
+            }
+            cekBangkrut(p);
+            perbaruiTampilan();
 
-            if (peta.id === 30) {
-                p.posisi = 10;
-                p.diPenjara = true;
-                sudahLempar = true;
-                mainkanSuara('penjara');
-                tulisLog(`🚨 <b>MASUK PENJARA!</b> ${p.nama} dikirim ke Penjara.`);
-                perbaruiTampilan();
-                selesaikanGiliranAtauLanjut();
-            } else if (peta.tipe === 'pajak') {
-                let denda = (p.posisi === 4) ? 200000 : 100000;
-                p.uang -= denda;
-                mainkanSuara('uang_keluar');
-                tulisLog(`💸 ${p.nama} membayar ${peta.nama} sebesar Rp ${denda.toLocaleString('id-ID')}.`);
-                cekKondisiBangkrut(p);
-                perbaruiTampilan();
-                selesaikanGiliranAtauLanjut();
-            } else if (peta.tipe === 'kesempatan') {
-                menungguTutupKartu = true;
-                mainkanSuara('suara_kesempatan');
-                let kartu = daftarKesempatan[Math.floor(Math.random() * daftarKesempatan.length)];
-                kartu.aksi(p);
-                tampilkanModalKartu("✨ KARTU KESEMPATAN", `✨ ${p.nama}: "${kartu.teks}"`, "✨");
-            } else if (peta.tipe === 'dana_umum') {
-                menungguTutupKartu = true;
-                mainkanSuara('suara_dana_umum');
-                let kartu = daftarDanaUmum[Math.floor(Math.random() * daftarDanaUmum.length)];
-                kartu.aksi(p);
-                tampilkanModalKartu("📦 DANA UMUM", `📦 ${p.nama}: "${kartu.teks}"`, "📦");
-            } else if (peta.pemilik !== null && peta.pemilik.id !== p.id && !peta.isGadai) {
-                let hitungSewa = peta.sewaDasar;
-                if (peta.level === 0 && cekKomplekSatuWarna(peta.pemilik, peta.id)) {
-                    hitungSewa *= 2;
-                } else if (peta.level === 1) hitungSewa *= 5;
-                else if (peta.level === 2) hitungSewa *= 15;
-                else if (peta.level === 3) hitungSewa *= 30;
-                else if (peta.level === 4) hitungSewa *= 50;
-                else if (peta.level === 5) hitungSewa *= 80;
-
-                p.uang -= hitungSewa;
-                peta.pemilik.uang += hitungSewa;
-                mainkanSuara('uang_keluar');
-                tulisLog(`💸 ${p.nama} membayar sewa Rp ${hitungSewa.toLocaleString('id-ID')} kepada ${peta.pemilik.nama}.`);
-                
-                cekKondisiBangkrut(p);
-                perbaruiTampilan();
-                selesaikanGiliranAtauLanjut();
-            } else {
-                perbaruiTampilan();
-                selesaikanGiliranAtauLanjut();
+            if (p.isBot && !gameSelesai) {
+                setTimeout(botAIAction, 1000);
             }
         }
 
-        function jalankanLogikaBot() {
-            if (gameSelesai) return;
+        function botAIAction() {
             const p = pemain[giliranIndex];
+            const pt = petaData[p.posisi];
 
-            if (p.isBangkrut) { gantiGiliranBerikutnya(); return; }
-
-            if (p.diPenjara) {
-                if (p.uang >= 50000) {
-                    p.uang -= 50000; p.diPenjara = false; sudahLempar = false;
-                    mainkanSuara('beli');
-                    tulisLog(`💰 ${p.nama} membayar denda Rp 50.000 dan bebas dari Penjara.`);
-                    perbaruiTampilan();
-                    setTimeout(() => { eksekusiLemparDadu(); }, 800);
-                    return;
-                } else {
-                    sudahLempar = false;
-                    setTimeout(() => { eksekusiLemparDadu(); }, 800);
-                    return;
-                }
+            if (pt.harga > 0 && !pt.pemilik && p.uang >= pt.harga) {
+                p.uang -= pt.harga;
+                pt.pemilik = p;
+                renderBangunan3D(pt.id, 0, p.warnaHex);
+                tulisLog(`🤖 Bot AI membeli tanah ${pt.nama}`);
+            } else if (pt.pemilik?.id === p.id && p.totalPutaran >= 1 && pt.level < 5 && p.uang >= pt.hargaRumah) {
+                p.uang -= pt.hargaRumah;
+                pt.level++;
+                renderBangunan3D(pt.id, pt.level, p.warnaHex);
+                tulisLog(`🤖 Bot AI upgrade kota di ${pt.nama}`);
             }
-
-            const peta = petaData[p.posisi];
-
-            if (peta.harga > 0 && peta.pemilik === null && p.uang >= peta.harga) {
-                p.uang -= peta.harga;
-                peta.pemilik = p; peta.level = 0;
-                mainkanSuara('beli');
-                tulisLog(`🏡 ${p.nama} membeli properti ${peta.nama} seharga Rp ${peta.harga.toLocaleString('id-ID')}.`);
-            } else if (peta.harga > 0 && peta.pemilik !== null && peta.pemilik.id === p.id) {
-                let satuKomplek = cekKomplekSatuWarna(p, peta.id);
-                if (satuKomplek && peta.level < 5 && p.uang >= peta.hargaRumah) {
-                    p.uang -= peta.hargaRumah;
-                    peta.level++;
-                    mainkanSuara('beli');
-                    tulisLog(`🏘️ ${p.nama} mendirikan bangunan di ${peta.nama} (Level ${peta.level})!`);
-                }
-            }
-
-            cekKondisiBangkrut(p);
-            if (cekKondisiKemenanganGame()) return;
-
             perbaruiTampilan();
-
-            setTimeout(() => {
-                if (adaDaduKembar) {
-                    adaDaduKembar = false; sudahLempar = false;
-                    tulisLog(`🔥 ${p.nama} melempar dadu lagi karena kembar!`);
-                    eksekusiLemparDadu();
-                } else {
-                    gantiGiliranBerikutnya();
-                }
-            }, 1000);
-        }
-
-        function tampilkanModalKartu(judul, pesan, ikon) {
-            document.getElementById('judul-kartu-modal').innerText = judul;
-            document.getElementById('pesan-kartu-modal').innerHTML = pesan;
-            document.getElementById('modal-kartu-ikon').innerText = ikon;
-            document.getElementById('modal-kartu').style.display = 'flex';
-            tulisLog(pesan);
-        }
-
-        function tutupModalKartu() {
-            mainkanSuara('klik');
-            document.getElementById('modal-kartu').style.display = 'none';
-            menungguTutupKartu = false;
-            const pAktif = pemain[giliranIndex];
-            cekKondisiBangkrut(pAktif);
-            if (cekKondisiKemenanganGame()) return;
-
-            perbaruiTampilan();
-            setTimeout(() => { selesaikanGiliranAtauLanjut(); }, 300);
-        }
-
-        function selesaikanGiliranAtauLanjut() {
-            if (gameSelesai) return;
-            const pAktif = pemain[giliranIndex];
-            const petaAktif = petaData[pAktif.posisi];
-
-            if (pAktif.isBot) {
-                setTimeout(() => { jalankanLogikaBot(); }, 800);
-                return;
-            }
-
-            let bisaBeli = (petaAktif.harga > 0 && petaAktif.pemilik === null && pAktif.uang >= petaAktif.harga);
-            let bisaUpgrade = (petaAktif.harga > 0 && petaAktif.pemilik !== null && petaAktif.pemilik.id === pAktif.id && cekKomplekSatuWarna(pAktif, petaAktif.id) && petaAktif.level < 5 && pAktif.uang >= petaAktif.hargaRumah);
-
-            if (!bisaBeli && !bisaUpgrade) {
-                setTimeout(() => {
-                    if (adaDaduKembar) {
-                        adaDaduKembar = false; sudahLempar = false;
-                        tulisLog(`🔥 Anda melempar dadu lagi karena kembar!`);
-                    } else {
-                        gantiGiliranBerikutnya();
-                    }
-                }, 600);
-            }
+            setTimeout(gantiGiliran, 1200);
         }
 
         function beliKota() {
-            mainkanSuara('klik');
-            const pAktif = pemain[giliranIndex];
-            const peta = petaData[pAktif.posisi];
-
-            if (pAktif.uang >= peta.harga) {
-                pAktif.uang -= peta.harga;
-                peta.pemilik = pAktif; peta.level = 0;
-                mainkanSuara('beli');
-                tulisLog(`🏡 ${pAktif.nama} membeli ${peta.nama} seharga Rp ${peta.harga.toLocaleString('id-ID')}.`);
-                
+            const p = pemain[giliranIndex];
+            const pt = petaData[p.posisi];
+            if (p.uang >= pt.harga && !pt.pemilik) {
+                p.uang -= pt.harga;
+                pt.pemilik = p;
+                renderBangunan3D(pt.id, 0, p.warnaHex);
+                tulisLog(`🏠 ${p.nama} membeli kota ${pt.nama}`);
                 perbaruiTampilan();
-                setTimeout(() => {
-                    if (adaDaduKembar) { adaDaduKembar = false; sudahLempar = false; }
-                    else { gantiGiliranBerikutnya(); }
-                }, 500);
             }
         }
 
         function upgradeKota() {
-            mainkanSuara('klik');
-            const pAktif = pemain[giliranIndex];
-            const peta = petaData[pAktif.posisi];
-
-            if (pAktif.uang >= peta.hargaRumah && peta.level < 5) {
-                pAktif.uang -= peta.hargaRumah;
-                peta.level++;
-                mainkanSuara('beli');
-                tulisLog(`🏘️ ${pAktif.nama} membangun di ${peta.nama} (Level ${peta.level})!`);
-                
-                perbaruiTampilan();
-                setTimeout(() => {
-                    if (adaDaduKembar) { adaDaduKembar = false; sudahLempar = false; }
-                    else { gantiGiliranBerikutnya(); }
-                }, 500);
-            }
-        }
-
-        function gadaikanKota() {
-            mainkanSuara('klik');
-            const pAktif = pemain[giliranIndex];
-            const peta = petaData[pAktif.posisi];
-
-            if (!peta.isGadai) {
-                peta.isGadai = true;
-                let danaGadai = Math.round(peta.harga * 0.5);
-                pAktif.uang += danaGadai;
-                mainkanSuara('beli');
-                tulisLog(`🏦 ${pAktif.nama} menggadaikan ${peta.nama} & mendapat Rp ${danaGadai.toLocaleString('id-ID')}.`);
-            } else {
-                let tebusan = Math.round(peta.harga * 0.55);
-                if (pAktif.uang >= tebusan) {
-                    pAktif.uang -= tebusan;
-                    peta.isGadai = false;
-                    mainkanSuara('uang_keluar');
-                    tulisLog(`🏦 ${pAktif.nama} menebus hipotik ${peta.nama} seharga Rp ${tebusan.toLocaleString('id-ID')}.`);
-                }
-            }
-            perbaruiTampilan();
-        }
-
-        function gantiGiliranBerikutnya() {
-            if (sedangBerjalan || gameSelesai) return;
-
-            sudahLempar = false; sedangBerjalan = false; adaDaduKembar = false; hitungDaduKembar = 0;
+            const p = pemain[giliranIndex];
+            const pt = petaData[p.posisi];
             
-            let percobaan = 0;
+            if (p.totalPutaran < 1) {
+                tulisLog(`⚠️ Harap selesaikan 1 putaran dahulu sebelum membangun!`);
+                return;
+            }
+
+            if (pt.pemilik?.id === p.id && pt.level < 5 && p.uang >= pt.hargaRumah) {
+                p.uang -= pt.hargaRumah;
+                pt.level++;
+                renderBangunan3D(pt.id, pt.level, p.warnaHex);
+                tulisLog(`🏘️ ${p.nama} membangun di ${pt.nama}`);
+                perbaruiTampilan();
+            }
+        }
+
+        function gantiGiliran() {
+            if (sedangBerjalan) return;
+            sudahLempar = false;
+            sedangBerjalan = false;
+
+            let count = 0;
             do {
                 giliranIndex = (giliranIndex + 1) % pemain.length;
-                percobaan++;
-            } while (pemain[giliranIndex].isBangkrut && percobaan < pemain.length);
-
-            if (cekKondisiKemenanganGame()) return;
-
+                count++;
+            } while (pemain[giliranIndex].isBangkrut && count < pemain.length);
+            
             perbaruiTampilan();
-            tulisLog(`--- Giliran: <b>${pemain[giliranIndex].nama}</b> ---`);
+            tulisLog(`👉 Giliran: ${pemain[giliranIndex].nama}`);
+
+            if (pemain[giliranIndex].isBot && !pemain[giliranIndex].isBangkrut) {
+                setTimeout(eksekusiLemparDadu, 1000);
+            }
+        }
+
+        function cekBangkrut(p) {
+            if (p.uang < 0) {
+                p.isBangkrut = true;
+                p.uang = 0;
+                tulisLog(`💥 ${p.nama} BANGKRUT!`);
+            }
+        }
+
+        function perbaruiTampilan() {
+            const statDiv = document.getElementById('daftar-statistik');
+            statDiv.innerHTML = '';
+            pemain.forEach((p, i) => {
+                const act = (i === giliranIndex && !gameSelesai);
+                statDiv.innerHTML += `
+                    <div class="item-statistik ${act ? 'aktif' : ''} ${p.isBangkrut ? 'bangkrut' : ''}">
+                        <span><span style="color:${p.warna}">■</span> ${p.nama} (${p.totalPutaran} Lap)</span>
+                        <span style="font-family:monospace; font-weight:bold;">Rp ${(p.uang/1000)}k</span>
+                    </div>`;
+            });
 
             const pAktif = pemain[giliranIndex];
-            if (pAktif.isBot && !pAktif.isBangkrut) {
-                setTimeout(() => { eksekusiLemparDadu(); }, 800);
-            }
+            document.getElementById('status-giliran').innerText = `Giliran: ${pAktif.nama}`;
+
+            const pt = petaData[pAktif.posisi];
+            const btnBeli = document.getElementById('btn-beli');
+            const btnUp = document.getElementById('btn-upgrade');
+            const btnSelesai = document.getElementById('btn-selesai');
+
+            btnBeli.disabled = !(sudahLempar && !pAktif.isBot && pt.harga > 0 && !pt.pemilik && pAktif.uang >= pt.harga);
+            btnUp.disabled = !(sudahLempar && !pAktif.isBot && pt.pemilik?.id === pAktif.id && pAktif.totalPutaran >= 1 && pt.level < 5 && pAktif.uang >= pt.hargaRumah);
+            btnSelesai.disabled = !(sudahLempar && !pAktif.isBot);
         }
 
-        function tulisLog(pesan) {
-            const logDiv = document.getElementById('log-game');
-            logDiv.innerHTML += `<br>• ${pesan}`;
-            logDiv.scrollTop = logDiv.scrollHeight;
+        function tulisLog(str) {
+            const log = document.getElementById('log-game');
+            log.innerHTML += `<div class="log-item">${str}</div>`;
+            log.scrollTop = log.scrollHeight;
         }
 
-        window.onload = function() {
-            if (localStorage.getItem('monopoli_dark_mode') === 'true') {
-                document.body.classList.add('dark-mode');
-            }
+        function animate(time) {
+            requestAnimationFrame(animate);
+            TWEEN.update();
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        window.onload = () => {
+            init3DScene();
             inisialisasiGame();
         };
     </script>
