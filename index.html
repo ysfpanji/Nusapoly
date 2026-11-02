@@ -55,20 +55,23 @@
         .box-dadu-single { font-size: 26px; background: #fff; border: 2px solid var(--gold); border-radius: 8px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 8px rgba(0,0,0,0.4); cursor: pointer; color: #1e293b; }
         .box-dadu-single.disabled { opacity: 0.4; cursor: not-allowed; filter: grayscale(1); }
 
-        /* --- STYLES KHUSUS PERBAIKAN TAMPILAN MOBILE --- */
+        /* --- STYLES RESPONSIF PERBAIKAN LOG DI LAYAR HP --- */
         @media (max-width: 768px) {
             #hud-kiri {
-                top: 8px; left: 8px; right: 8px; width: auto; max-height: none; padding: 8px;
+                top: 8px; left: 8px; right: 8px; width: auto; max-height: none; padding: 6px;
             }
             #hud-kanan {
-                top: auto; bottom: 80px; right: 8px; width: 180px; max-height: 100px; padding: 6px;
-                display: none; /* Disembunyikan secara default di HP agar papan tidak terhalang */
+                top: auto; bottom: 105px; right: 8px; width: 170px; max-height: 110px; padding: 6px;
+                display: flex !important; /* Memastikan log kembali tampil di HP */
+            }
+            #log-game {
+                height: 70px; font-size: 9px; padding: 4px;
             }
             .statistik-container {
                 flex-direction: row; overflow-x: auto; max-height: none; gap: 6px; padding-bottom: 2px;
             }
             .item-statistik {
-                flex-shrink: 0; min-width: 100px; font-size: 10px; padding: 4px 6px; flex-direction: column; align-items: flex-start; gap: 2px;
+                flex-shrink: 0; min-width: 95px; font-size: 9px; padding: 4px 6px; flex-direction: column; align-items: flex-start; gap: 1px;
             }
             #hud-bawah {
                 bottom: 8px; width: 96vw; padding: 8px; gap: 6px; flex-wrap: wrap; justify-content: space-between;
@@ -163,8 +166,7 @@
         });
 
         function createDiceFaceTexture(number) {
-            const canvas = document.createElement('canvas');
-            canvas.width = 128; canvas.height = 128;
+            const canvas = document.createElement('canvas'); canvas.width = 128; canvas.height = 128;
             const ctx = canvas.getContext('2d');
             ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, 128, 128);
             ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 8; ctx.strokeRect(0, 0, 128, 128);
@@ -180,8 +182,7 @@
         }
 
         function createTileTextTexture(index, name, type, price, colorHex) {
-            const canvas = document.createElement('canvas');
-            canvas.width = 256; canvas.height = 256;
+            const canvas = document.createElement('canvas'); canvas.width = 256; canvas.height = 256;
             const ctx = canvas.getContext('2d');
             ctx.fillStyle = '#fef08a';
             if (type === 'sudut') ctx.fillStyle = '#facc15';
@@ -212,21 +213,16 @@
 
         function init3DScene() {
             const container = document.getElementById('webgl-container');
-            scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x0a0f24);
-            scene.fog = new THREE.FogExp2(0x0a0f24, 0.01);
-
+            scene = new THREE.Scene(); scene.background = new THREE.Color(0x0a0f24); scene.fog = new THREE.FogExp2(0x0a0f24, 0.01);
             camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
             
-            // Penyesuaian Kamera Awal untuk Layar HP
             const isMobile = window.innerWidth <= 768;
             camera.position.set(0, isMobile ? 32 : 22, isMobile ? 32 : 26);
 
             renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-            renderer.shadowMap.enabled = true;
-            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
             container.appendChild(renderer.domElement);
 
             controls = new THREE.OrbitControls(camera, renderer.domElement);
@@ -240,53 +236,34 @@
             dirLight.shadow.mapSize.width = 2048; dirLight.shadow.mapSize.height = 2048;
             scene.add(dirLight);
 
-            buatPapan3D();
-            buatDadu3D();
-
-            window.addEventListener('resize', onWindowResize);
-            animate();
+            buatPapan3D(); buatDadu3D();
+            window.addEventListener('resize', onWindowResize); animate();
         }
 
         function onWindowResize() {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
+            camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
         }
 
         function resetSudutKamera() {
             isPOVMode = false; controls.enabled = true;
             const isMobile = window.innerWidth <= 768;
-            new TWEEN.Tween(camera.position)
-                .to({ x: 0, y: isMobile ? 32 : 22, z: isMobile ? 32 : 26 }, 800)
-                .easing(TWEEN.Easing.Cubic.Out).start();
-            new TWEEN.Tween(controls.target)
-                .to({ x: 0, y: 0, z: 0 }, 800)
-                .easing(TWEEN.Easing.Cubic.Out).start();
+            new TWEEN.Tween(camera.position).to({ x: 0, y: isMobile ? 32 : 22, z: isMobile ? 32 : 26 }, 800).easing(TWEEN.Easing.Cubic.Out).start();
+            new TWEEN.Tween(controls.target).to({ x: 0, y: 0, z: 0 }, 800).easing(TWEEN.Easing.Cubic.Out).start();
         }
 
         function setPOVFollowCamera(targetPos3D) {
             isPOVMode = true; controls.enabled = false;
-            const camTargetX = targetPos3D.x * 1.2;
-            const camTargetZ = targetPos3D.z * 1.2 + 6;
-            
-            new TWEEN.Tween(camera.position)
-                .to({ x: camTargetX, y: 7, z: camTargetZ }, 400)
-                .easing(TWEEN.Easing.Quadratic.Out).start();
-
-            new TWEEN.Tween(controls.target)
-                .to({ x: targetPos3D.x, y: targetPos3D.y + 0.5, z: targetPos3D.z }, 400)
-                .easing(TWEEN.Easing.Quadratic.Out).start();
+            const camTargetX = targetPos3D.x * 1.2; const camTargetZ = targetPos3D.z * 1.2 + 6;
+            new TWEEN.Tween(camera.position).to({ x: camTargetX, y: 7, z: camTargetZ }, 400).easing(TWEEN.Easing.Quadratic.Out).start();
+            new TWEEN.Tween(controls.target).to({ x: targetPos3D.x, y: targetPos3D.y + 0.5, z: targetPos3D.z }, 400).easing(TWEEN.Easing.Quadratic.Out).start();
         }
 
         function resetPOVToOverviewCamera() {
             isPOVMode = false; controls.enabled = true;
             const isMobile = window.innerWidth <= 768;
-            new TWEEN.Tween(camera.position)
-                .to({ x: 0, y: isMobile ? 32 : 22, z: isMobile ? 32 : 26 }, 800)
-                .easing(TWEEN.Easing.Cubic.Out).start();
-            new TWEEN.Tween(controls.target)
-                .to({ x: 0, y: 0, z: 0 }, 800)
-                .easing(TWEEN.Easing.Cubic.Out).start();
+            new TWEEN.Tween(camera.position).to({ x: 0, y: isMobile ? 32 : 22, z: isMobile ? 32 : 26 }, 800).easing(TWEEN.Easing.Cubic.Out).start();
+            new TWEEN.Tween(controls.target).to({ x: 0, y: 0, z: 0 }, 800).easing(TWEEN.Easing.Cubic.Out).start();
         }
 
         function getTilePosition3D(index) {
@@ -320,8 +297,7 @@
 
             const centerTexture = new THREE.CanvasTexture(centerCanvas);
             const centerMat = new THREE.MeshStandardMaterial({ map: centerTexture, roughness: 0.5 });
-            const centerMesh = new THREE.Mesh(centerGeo, centerMat);
-            centerMesh.rotation.x = -Math.PI / 2; centerMesh.position.y = 0.05;
+            const centerMesh = new THREE.Mesh(centerGeo, centerMat); centerMesh.rotation.x = -Math.PI / 2; centerMesh.position.y = 0.05;
             boardGroup.add(centerMesh);
 
             for (let i = 0; i < totalPetak; i++) {
@@ -442,7 +418,7 @@
             petaData.forEach(p => { p.pemilik = null; p.level = 0; p.isGadai = false; });
             giliranIndex = 0; sudahLempar = false; sedangBerjalan = false;
             document.getElementById('log-game').innerHTML = '';
-            tulisLog(`🎮 Game Monopoli 3D dimulai!`); perbaruiTampilan();
+            tulisLog(`🎮 Monopoli 3D Dimulai!`); perbaruiTampilan();
 
             if (pemain[giliranIndex].isBot) { setTimeout(eksekusiLemparDadu, 1000); }
         }
@@ -493,7 +469,7 @@
             });
 
             setTimeout(() => {
-                const p = pemain[giliranIndex]; tulisLog(`🎲 ${p.nama} melempar dadu: ${h1} + ${h2} = ${total}`);
+                const p = pemain[giliranIndex]; tulisLog(`🎲 ${p.nama}: ${h1}+${h2}=${total}`);
                 const nextPos = (p.posisi + total) % totalPetak;
                 gerakkanKarakter3D(giliranIndex, nextPos, () => { sedangBerjalan = false; sudahLempar = true; prosesPetak(p); });
             }, 700);
@@ -501,7 +477,7 @@
 
         function prosesPetak(p) {
             const pt = petaData[p.posisi];
-            if (pt.tipe === 'pajak') { p.uang -= 150000; tulisLog(`💸 ${p.nama} bayar pajak Rp 150k`); }
+            if (pt.tipe === 'pajak') { p.uang -= 150000; tulisLog(`💸 ${p.nama} pajak Rp 150k`); }
             else if (pt.pemilik && pt.pemilik.id !== p.id && !pt.isGadai) {
                 const sewa = pt.sewaDasar * (pt.level + 1); p.uang -= sewa; pt.pemilik.uang += sewa;
                 tulisLog(`💸 ${p.nama} bayar sewa Rp ${sewa/1000}k ke ${pt.pemilik.nama}`);
@@ -513,7 +489,7 @@
         function botAIAction() {
             const p = pemain[giliranIndex]; const pt = petaData[p.posisi];
             if (pt.harga > 0 && !pt.pemilik && p.uang >= pt.harga) {
-                p.uang -= pt.harga; pt.pemilik = p; renderBangunan3D(pt.id, 0, p.warnaHex); tulisLog(`🤖 Bot AI membeli ${pt.nama}`);
+                p.uang -= pt.harga; pt.pemilik = p; renderBangunan3D(pt.id, 0, p.warnaHex); tulisLog(`🤖 Bot AI beli ${pt.nama}`);
             } else if (pt.pemilik?.id === p.id && p.totalPutaran >= 1 && pt.level < 5 && p.uang >= pt.hargaRumah) {
                 p.uang -= pt.hargaRumah; pt.level++; renderBangunan3D(pt.id, pt.level, p.warnaHex); tulisLog(`🤖 Bot AI upgrade ${pt.nama}`);
             }
@@ -524,16 +500,16 @@
             const p = pemain[giliranIndex]; const pt = petaData[p.posisi];
             if (p.uang >= pt.harga && !pt.pemilik) {
                 p.uang -= pt.harga; pt.pemilik = p; renderBangunan3D(pt.id, 0, p.warnaHex);
-                tulisLog(`🏠 ${p.nama} membeli ${pt.nama}`); perbaruiTampilan();
+                tulisLog(`🏠 ${p.nama} beli ${pt.nama}`); perbaruiTampilan();
             }
         }
 
         function upgradeKota() {
             const p = pemain[giliranIndex]; const pt = petaData[p.posisi];
-            if (p.totalPutaran < 1) { tulisLog(`⚠️ Butuh 1 putaran dahulu!`); return; }
+            if (p.totalPutaran < 1) { tulisLog(`⚠️ Butuh 1 putaran!`); return; }
             if (pt.pemilik?.id === p.id && pt.level < 5 && p.uang >= pt.hargaRumah) {
                 p.uang -= pt.hargaRumah; pt.level++; renderBangunan3D(pt.id, pt.level, p.warnaHex);
-                tulisLog(`🏘️ ${p.nama} membangun di ${pt.nama}`); perbaruiTampilan();
+                tulisLog(`🏘️ ${p.nama} bangun ${pt.nama}`); perbaruiTampilan();
             }
         }
 
@@ -541,7 +517,7 @@
             if (sedangBerjalan) return; sudahLempar = false; sedangBerjalan = false;
             let count = 0;
             do { giliranIndex = (giliranIndex + 1) % pemain.length; count++; } while (pemain[giliranIndex].isBangkrut && count < pemain.length);
-            perbaruiTampilan(); tulisLog(`👉 Giliran: ${pemain[giliranIndex].nama}`);
+            perbaruiTampilan(); tulisLog(`👉 Turn: ${pemain[giliranIndex].nama}`);
             if (pemain[giliranIndex].isBot && !pemain[giliranIndex].isBangkrut) { setTimeout(eksekusiLemparDadu, 1000); }
         }
 
